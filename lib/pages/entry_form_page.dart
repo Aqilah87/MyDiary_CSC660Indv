@@ -12,12 +12,14 @@ class EntryFormPage extends StatefulWidget {
 
 class _EntryFormPageState extends State<EntryFormPage> {
   final _textController = TextEditingController();
+  final _titleController = TextEditingController();
   String _selectedEmoji = '😊';
 
   @override
   void initState() {
     super.initState();
     if (widget.entry != null) {
+      _titleController.text = widget.entry!.title;
       _textController.text = widget.entry!.text;
       _selectedEmoji = widget.entry!.emoji;
     }
@@ -25,6 +27,7 @@ class _EntryFormPageState extends State<EntryFormPage> {
 
   void _submitEntry() {
     final newEntry = DiaryEntry(
+      title: _titleController.text,
       text: _textController.text,
       emoji: _selectedEmoji,
       date: DateTime.now(),
@@ -33,11 +36,19 @@ class _EntryFormPageState extends State<EntryFormPage> {
   }
 
   @override
+  void dispose() {
+    _titleController.dispose();
+    _textController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.entry == null ? 'New Entry' : 'Edit Entry'),
       ),
+
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -45,9 +56,7 @@ class _EntryFormPageState extends State<EntryFormPage> {
           children: [
             Text('Title',
             style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
+              fontSize: 20,fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 4),
             TextField(

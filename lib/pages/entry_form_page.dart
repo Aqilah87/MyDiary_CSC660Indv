@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../models/diary_entry.dart';
+import 'dart:io';
 
 class EntryFormPage extends StatefulWidget {
   final DiaryEntry? entry;
@@ -14,6 +17,8 @@ class _EntryFormPageState extends State<EntryFormPage> {
   final _textController = TextEditingController();
   final _titleController = TextEditingController();
   String _selectedEmoji = '😊';
+  String _selectedFont = 'Roboto';
+  File? _selectedImage;
   bool isFavorite = false;
 
   @override
@@ -36,6 +41,16 @@ class _EntryFormPageState extends State<EntryFormPage> {
     Navigator.pop(context, newEntry);
   }
 
+  Future<void> _pickImage() async {
+    final picker = ImagePicker();
+    final picked = await picker.pickImage(source: ImageSource.gallery);
+    if (picked != null) {
+      setState(() {
+        _selectedImage = File(picked.path);
+      });
+    }
+  }
+
   @override
   void dispose() {
     _titleController.dispose();
@@ -45,6 +60,8 @@ class _EntryFormPageState extends State<EntryFormPage> {
 
   @override
   Widget build(BuildContext context) {
+    final availableFonts = ['Roboto', 'Lobster', 'Dancing Script', 'Pacifico'];
+
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.entry == null ? 'New Diary' : 'Edit Entry'),
@@ -76,7 +93,7 @@ class _EntryFormPageState extends State<EntryFormPage> {
 
                 ),
 
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -121,8 +138,40 @@ class _EntryFormPageState extends State<EntryFormPage> {
                 border: OutlineInputBorder(),
               ),
             ),
+
+            SizedBox(height: 20),
+            if (_selectedImage != null)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: Image.file(_selectedImage!, height: 150),
+              ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                ElevatedButton.icon(
+                  onPressed: _pickImage,
+                  icon: Icon(Icons.photo),
+                  label: Text('Add Photo'),
+                ),
+                SizedBox(width: 16),
+                DropdownButton<String>(
+                  value: _selectedFont,
+                  items: availableFonts.map((font) {
+                    return DropdownMenuItem(
+                      value: font,
+                      child: Text(font),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedFont = value!;
+                    });
+                  },
+                ),
           ],
         ),
+          ],
+      ),
       ),
     );
   }

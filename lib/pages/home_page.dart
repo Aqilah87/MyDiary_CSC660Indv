@@ -158,20 +158,26 @@ class _HomePageState extends State<HomePage> {
                 return Card(
                   margin: EdgeInsets.all(8),
                   child: ListTile(
-                    leading: Text(
-                      entry.emoji,
-                      style: TextStyle(fontSize: 30),
+                    leading: Text(entry.emoji, style: TextStyle(fontSize: 30),
                     ),
 
-                    title: Text(
-                      entry.text,
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
+                    title: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          entry.title,
+                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                          ),
+                          SizedBox(height: 4),
+                          Text(
+                            entry.text,
+                            style: TextStyle(fontWeight: FontWeight.normal, fontSize: 14),
+                            ),
+                            ],
+                            ),
 
                     subtitle: Text(
-                                DateFormat.yMMMd()
-                                    .add_jm()
-                                    .format(entry.date),
+                                DateFormat.yMMMd().add_jm().format(entry.date),
                                 style: TextStyle(
                                     color: Colors.grey[600], 
                                     fontSize: 12,

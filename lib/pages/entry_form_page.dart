@@ -14,6 +14,7 @@ class _EntryFormPageState extends State<EntryFormPage> {
   final _textController = TextEditingController();
   final _titleController = TextEditingController();
   String _selectedEmoji = '😊';
+  bool isFavorite = false;
 
   @override
   void initState() {
@@ -46,8 +47,34 @@ class _EntryFormPageState extends State<EntryFormPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.entry == null ? 'New Entry' : 'Edit Entry'),
-      ),
+        title: Text(widget.entry == null ? 'New Diary' : 'Edit Entry'),
+        backgroundColor: const Color.fromARGB(255, 30, 160, 216),
+
+        actions: [
+          // IconButton for favorite toggle
+          IconButton(
+            icon: Icon(
+              isFavorite ? Icons.star : Icons.star_border,
+              color: isFavorite ? Colors.yellow[700] : Colors.white,
+              ),
+            onPressed: () {
+              setState(() {
+                isFavorite = !isFavorite;
+              });
+            },
+          ),
+
+          // TextButton for saving the entry
+          TextButton(
+            onPressed: _submitEntry,
+            child: Text(
+              widget.entry == null ? 'Save' : 'Update',
+              style: TextStyle(color: Colors.white, fontSize: 16),
+            ),
+          ),
+        ],
+
+                ),
 
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -93,11 +120,6 @@ class _EntryFormPageState extends State<EntryFormPage> {
                 labelText: 'How do you feel?',
                 border: OutlineInputBorder(),
               ),
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _submitEntry,
-              child: Text(widget.entry == null ? 'Add Entry' : 'Update Entry'),
             ),
           ],
         ),

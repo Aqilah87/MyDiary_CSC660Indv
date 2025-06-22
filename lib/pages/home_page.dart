@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'entry_form_page.dart';
 import '../models/diary_entry.dart';
+import '../screens/calendar_page.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -107,21 +108,31 @@ class _HomePageState extends State<HomePage> {
               title: Text('Home'),
               onTap: () => _navigate('Home'),
             ),
+
             ListTile(
               leading: Icon(Icons.create),
               title: Text('Create Diary'),
               onTap: () => _navigate('Create Diary'),
             ),
+
             ListTile(
               leading: Icon(Icons.calendar_month),
               title: Text('Diary Calendar'),
-              onTap: () => _navigate('Diary Calendar'),
-            ),
+              onTap: () {
+                Navigator.pop(context); // Close the drawer first
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => CalendarPage()),
+                  );
+                  },
+                  ),
+
             ListTile(
               leading: Icon(Icons.settings),
               title: Text('Settings'),
               onTap: () => _navigate('Settings'),
             ),
+
             ListTile(
               leading: Icon(Icons.info_outline),
               title: Text('About App'),

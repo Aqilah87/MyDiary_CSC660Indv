@@ -44,8 +44,12 @@ class _SettingsPageState extends State<SettingsPage> {
       builder: (_) => AlertDialog(
         title: Text('About This App'),
         content: Text(
-          'Aqilah Diary is a private space where users can write entries, choose emojis, attach photos, and manage their feelings. It includes personalized touches like mood emojis, calendar views, and more.',
-        ),
+          '''Dear Diary is a personal and private digital diary that allows users to record their daily thoughts, feelings, and experiences.
+          Users can write journal entries, select emojis that reflect their mood, attach meaningful photos, and personalize their diary in a creative way. 
+          The app also includes features like a calendar view to track past entries, customizable fonts, and an easy-to-use interface for editing or deleting entries. 
+          Whether you're feeling happy, sad, or anything in between, Dear Diary is your safe space to express yourself.'''
+),
+
         actions: [
           TextButton(
             child: Text('OK', style: TextStyle(color: Theme.of(context).primaryColor)),

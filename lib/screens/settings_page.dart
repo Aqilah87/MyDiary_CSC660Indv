@@ -68,11 +68,10 @@ class _SettingsPageState extends State<SettingsPage> {
           SwitchListTile(
             title: Text('App Theme'),
             subtitle: Text(_isDarkMode ? 'Dark Mode' : 'Light Mode'),
-            secondary: Icon(Icons.brightness_6),
             value: _isDarkMode,
-            onChanged: (value) {
-              setState(() => _isDarkMode = value);
-              widget.onThemeChanged(value); // Pass back to HomePage
+            onChanged: (val) {
+              setState(() => _isDarkMode = val);
+              widget.onThemeChanged(val);
               },
               ),
 

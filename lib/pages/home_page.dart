@@ -3,6 +3,9 @@ import 'package:intl/intl.dart';
 import 'entry_form_page.dart';
 import '../models/diary_entry.dart';
 import '../screens/calendar_page.dart';
+import '../screens/settings_page.dart';
+import '../theme_controller.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -10,6 +13,11 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  // 🔧 Theme & PIN toggle state
+  bool isDarkThemeEnabled = false;
+  bool isPinEnabled = false;
+
+  // 🔧 Your existing diary state
   List<DiaryEntry> entries = [];
   List<DiaryEntry> filteredEntries = [];
 
@@ -17,6 +25,7 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     filteredEntries = entries;
+    _loadPinPreference();
   }
 
   void _addNewEntry(DiaryEntry entry) {
@@ -38,6 +47,28 @@ class _HomePageState extends State<HomePage> {
       entries.removeAt(index);
       filteredEntries = entries; // Reset filtered entries
     });
+  }
+
+  void _loadPinPreference() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      isPinEnabled = prefs.getBool('pin_enabled') ?? false;
+    });
+  }
+
+  void _savePinPreference(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('pin_enabled', value);
+  }
+
+  void _handleThemeChanged(bool val) {
+    setState(() => isDarkThemeEnabled = val);
+    themeNotifier.value = val ? ThemeMode.dark : ThemeMode.light;
+  }
+
+  void _handlePinChanged(bool val) {
+    setState(() => isPinEnabled = val);
+    _savePinPreference(val);
   }
 
   void _navigate(String label) {
@@ -103,18 +134,39 @@ class _HomePageState extends State<HomePage> {
                 style: TextStyle(color: Colors.white, fontSize: 24),
               ),
             ),
+            //home
             ListTile(
               leading: Icon(Icons.home),
               title: Text('Home'),
-              onTap: () => _navigate('Home'),
-            ),
+              onTap: () {
+                Navigator.pop(context); // close drawer
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (_) => HomePage()),
+                  );
+                  },
+                  ),
 
+            // Create Diary
             ListTile(
               leading: Icon(Icons.create),
               title: Text('Create Diary'),
-              onTap: () => _navigate('Create Diary'),
-            ),
+              onTap: () async {
+                Navigator.pop(context); // close drawer
+                final newEntry = await Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => EntryFormPage()),
+                  );
+                  if (newEntry != null) {
+                    setState(() {
+                      entries.add(newEntry); // or call your _addNewEntry()
+                      filteredEntries = entries;
+                      });
+                      }
+                      },
+                      ),
 
+            // Diary Calendar
             ListTile(
               leading: Icon(Icons.calendar_month),
               title: Text('Diary Calendar'),
@@ -127,22 +179,47 @@ class _HomePageState extends State<HomePage> {
                   },
                   ),
 
-            ListTile(
-              leading: Icon(Icons.settings),
-              title: Text('Settings'),
-              onTap: () => _navigate('Settings'),
-            ),
+                  // Settings
+                  ListTile(
+                    leading: Icon(Icons.settings),
+                    title: Text('Settings'),
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => SettingsPage(
+                            isDarkMode: isDarkThemeEnabled,
+                            isPinEnabled: isPinEnabled,
+                            onThemeChanged: (val) {
+                              setState(() {
+                                isDarkThemeEnabled = val;
+                                // apply your theme change logic
+                                });
+                                },
+                                onPinChanged: (val) {
+                                  setState(() {
+                                    isPinEnabled = val;
+                                    // apply your pin lock logic
+                                    });
+                                    },
+                                    ),
+                                    ),
+                                    );
+                                    },
+                                    ),
 
-            ListTile(
-              leading: Icon(Icons.info_outline),
-              title: Text('About App'),
-              onTap: () => _navigate('About App'),
-            ),
-          ],
-        ),
-      ),
 
-      body: Column(
+                    // About App 
+                    ListTile(
+                      leading: Icon(Icons.info_outline),
+                      title: Text('About App'),
+                      onTap: () => _navigate('About App'),
+                      ),
+                      ],
+                      ),
+                      ),
+body: Column(
         children: [
           Padding(
             padding: const EdgeInsets.all(8.0),

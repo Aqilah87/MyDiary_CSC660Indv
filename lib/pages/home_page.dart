@@ -27,7 +27,6 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    filteredEntries = entries;
     _loadPinPreference();
     _loadDiaryEntries();
   }
@@ -64,6 +63,7 @@ class _HomePageState extends State<HomePage> {
       entries = diaryBox.values.toList();
       filteredEntries = entries;
     });
+    print('Loaded ${entries.length} entries');
   }
 
   void _loadPinPreference() async {
@@ -175,10 +175,7 @@ class _HomePageState extends State<HomePage> {
                   MaterialPageRoute(builder: (_) => EntryFormPage()),
                   );
                   if (newEntry != null) {
-                    setState(() {
-                      entries.add(newEntry); // or call your _addNewEntry()
-                      filteredEntries = entries;
-                      });
+                        _addNewEntry(newEntry);
                       }
                       },
                       ),

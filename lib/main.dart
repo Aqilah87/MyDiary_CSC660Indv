@@ -10,8 +10,8 @@ final ValueNotifier<ThemeMode> themeNotifier = ValueNotifier(ThemeMode.light);
 
 void main() async {
 WidgetsFlutterBinding.ensureInitialized();
+// Initialize Hive and register the DiaryEntry adapter
 await Hive.initFlutter();
-
 Hive.registerAdapter(DiaryEntryAdapter());
 await Hive.openBox<DiaryEntry>('diary');
 

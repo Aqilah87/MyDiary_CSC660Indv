@@ -1,10 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'lock_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'models/diary_entry.dart'; // Make sure this is the correct path
+import 'theme_controller.dart';
 
 // 🌓 Global theme notifier
 final ValueNotifier<ThemeMode> themeNotifier = ValueNotifier(ThemeMode.light);
-void main() {
+
+void main() async {
+WidgetsFlutterBinding.ensureInitialized();
+await Hive.initFlutter();
+
+Hive.registerAdapter(DiaryEntryAdapter());
+await Hive.openBox<DiaryEntry>('diary');
+
   runApp(MyApp());
 }
 

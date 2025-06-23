@@ -6,6 +6,7 @@ import '../screens/calendar_page.dart';
 import '../screens/settings_page.dart';
 import '../theme_controller.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -21,31 +22,47 @@ class _HomePageState extends State<HomePage> {
   List<DiaryEntry> entries = [];
   List<DiaryEntry> filteredEntries = [];
 
+  late Box<DiaryEntry> diaryBox;
+
   @override
   void initState() {
     super.initState();
     filteredEntries = entries;
     _loadPinPreference();
+    _loadDiaryEntries();
   }
 
-  void _addNewEntry(DiaryEntry entry) {
+  void _addNewEntry(DiaryEntry entry) async {
+    await diaryBox.add(entry);
     setState(() {
-      entries.add(entry);
-      filteredEntries = entries; // Reset filtered entries
+      entries = diaryBox.values.toList();
+      filteredEntries = entries; 
     });
   }
 
-  void _editEntry(int index, DiaryEntry updatedEntry) {
+  void _editEntry(int index, DiaryEntry updatedEntry) async {
+    final key = diaryBox.keyAt(index);
+    await diaryBox.put(key, updatedEntry);
     setState(() {
-      entries[index] = updatedEntry;
-      filteredEntries = entries; // Reset filtered entries
+      entries = diaryBox.values.toList();
+      filteredEntries = entries;
     });
   }
 
-  void _deleteEntry(int index) {
+  void _deleteEntry(int index) async {
+    final key = diaryBox.keyAt(index);
+    await diaryBox.delete(key);
     setState(() {
-      entries.removeAt(index);
-      filteredEntries = entries; // Reset filtered entries
+      entries = diaryBox.values.toList();
+      filteredEntries = entries;
+    });
+  }
+
+  void _loadDiaryEntries() {
+    diaryBox = Hive.box<DiaryEntry>('diary');
+    setState(() {
+      entries = diaryBox.values.toList();
+      filteredEntries = entries;
     });
   }
 

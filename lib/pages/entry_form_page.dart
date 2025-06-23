@@ -122,7 +122,7 @@ class _EntryFormPageState extends State<EntryFormPage> {
             SizedBox(height: 20),
             DropdownButtonFormField<String>(
               value: _selectedEmoji,
-              items: ['😊', '😢', '😡', '😍', '😴', '😞', '😤', '😨', '🤒', '😎'].map((String emoji) {
+              items: ['😊', '😢', '😡', '😍', '😴', '😞', '😤', '😨', '🤒', '😎','😄','🌧️', '☀️', '❤️', '💔', '🤔', '💐', '🎂'].map((String emoji) {
                 return DropdownMenuItem<String>(
                   value: emoji,
                   child: Text(emoji, style: TextStyle(fontSize: 24)),

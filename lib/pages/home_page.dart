@@ -224,8 +224,8 @@ class _HomePageState extends State<HomePage> {
                                           Padding(
                                             padding: const EdgeInsets.all(8.0),
                                             child: 
-                                            Image.asset('assets/diary2.png',
-                                            height: 150,
+                                            Image.asset('assets/dd2.png',
+                                            height: 350,
                                             fit: BoxFit.contain,
                                             ),
                                             ),

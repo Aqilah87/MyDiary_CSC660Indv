@@ -32,10 +32,11 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _addNewEntry(DiaryEntry entry) async {
-    await diaryBox.add(entry);
-    setState(() {
-      entries = diaryBox.values.toList();
-      filteredEntries = entries; 
+    final box = Hive.box<DiaryEntry>('diary');
+      await box.add(entry); // ✅ Save to Hive
+      setState(() {
+        entries = box.values.toList(); // ✅ Reload
+        filteredEntries = entries; 
     });
   }
 
@@ -57,8 +58,8 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  void _loadDiaryEntries() {
-    diaryBox = Hive.box<DiaryEntry>('diary');
+  void _loadDiaryEntries() async {
+    diaryBox = await Hive.openBox<DiaryEntry>('diary');
     setState(() {
       entries = diaryBox.values.toList();
       filteredEntries = entries;

@@ -9,26 +9,24 @@ import 'theme_controller.dart';
 final ValueNotifier<ThemeMode> themeNotifier = ValueNotifier(ThemeMode.light);
 
 void main() async {
-WidgetsFlutterBinding.ensureInitialized();
-// Initialize Hive and register the DiaryEntry adapter
-await Hive.initFlutter();
-Hive.registerAdapter(DiaryEntryAdapter());
-await Hive.openBox<DiaryEntry>('diary');
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Hive setup
+  await Hive.initFlutter();
+  Hive.registerAdapter(DiaryEntryAdapter());
+  await Hive.openBox<DiaryEntry>('diary');
+
+  // ✅ Load theme preference before runApp
+  final prefs = await SharedPreferences.getInstance();
+  final isDark = prefs.getBool('is_dark_mode') ?? false;
+  themeNotifier.value = isDark ? ThemeMode.dark : ThemeMode.light;
 
   runApp(MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  // Optional: Load saved theme mode from preferences (if you want persistence)
-  Future<void> _loadThemePreference() async {
-    final prefs = await SharedPreferences.getInstance();
-    final isDark = prefs.getBool('is_dark_mode') ?? false;
-    themeNotifier.value = isDark ? ThemeMode.dark : ThemeMode.light;
   }
 
+class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    _loadThemePreference();
     return ValueListenableBuilder<ThemeMode>(
       valueListenable: themeNotifier,
       builder: (_, mode, __) {

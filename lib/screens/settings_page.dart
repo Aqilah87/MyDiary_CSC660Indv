@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../main.dart';
 
 class SettingsPage extends StatefulWidget {
   final bool isDarkMode;
@@ -72,9 +74,14 @@ class _SettingsPageState extends State<SettingsPage> {
           SwitchListTile(
             title: Text('App Theme'),
             subtitle: Text(_isDarkMode ? 'Dark Mode' : 'Light Mode'),
+            secondary: Icon(Icons.dark_mode),
             value: _isDarkMode,
-            onChanged: (val) {
+            onChanged: (val) async {
+              final prefs = await SharedPreferences.getInstance();
+              await prefs.setBool('is_dark_mode', val);
+
               setState(() => _isDarkMode = val);
+              themeNotifier.value = val ? ThemeMode.dark : ThemeMode.light;
               widget.onThemeChanged(val);
               },
               ),

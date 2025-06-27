@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'lock_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'lock_screen.dart';
 import 'models/diary_entry.dart'; // Make sure this is the correct path
 import 'theme_controller.dart';
 
@@ -16,7 +16,7 @@ void main() async {
   Hive.registerAdapter(DiaryEntryAdapter());
   await Hive.openBox<DiaryEntry>('diary');
 
-  // ✅ Load theme preference before runApp
+  // Load theme preference before runApp
   final prefs = await SharedPreferences.getInstance();
   final isDark = prefs.getBool('is_dark_mode') ?? false;
   themeNotifier.value = isDark ? ThemeMode.dark : ThemeMode.light;

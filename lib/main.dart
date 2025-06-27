@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'lock_screen.dart';
+import 'pages/home_page.dart';
 import 'models/diary_entry.dart'; // Make sure this is the correct path
 import 'theme_controller.dart';
 
@@ -19,18 +20,13 @@ void main() async {
   // Load theme preference before runApp
   final prefs = await SharedPreferences.getInstance();
   final isDark = prefs.getBool('is_dark_mode') ?? false;
+  final isPinEnabled = prefs.getBool('is_pin_enabled') ?? false;
   themeNotifier.value = isDark ? ThemeMode.dark : ThemeMode.light;
 
-  runApp(MyApp());
-  }
-
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return ValueListenableBuilder<ThemeMode>(
+  runApp(
+      ValueListenableBuilder<ThemeMode>(
       valueListenable: themeNotifier,
-      builder: (_, mode, __) {
-        return MaterialApp(
+      builder: (_, mode, __) => MaterialApp(
           debugShowCheckedModeBanner: false,
           title: 'Aqilah\'s Diary',
           theme: ThemeData(
@@ -42,9 +38,8 @@ class MyApp extends StatelessWidget {
             primarySwatch: Colors.purple,
           ),
           themeMode: mode,
-          home: LockScreen(),
-        );
-      },
+          home: isPinEnabled ? LockScreen() : HomePage(),
+        ),
+      ),
     );
   }
-}

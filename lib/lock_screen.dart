@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'pages/home_page.dart'; // Your main diary page
 
 class LockScreen extends StatefulWidget {
@@ -8,13 +9,15 @@ class LockScreen extends StatefulWidget {
 
 class _LockScreenState extends State<LockScreen> {
   final _pinController = TextEditingController();
-  final String _correctPin = '1234';
 
-  void _checkPin() {
-    if (_pinController.text == _correctPin) {
+  Future<void> _checkPin() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedPin = prefs.getString('user_pin_code') ?? '';
+
+    if (_pinController.text == savedPin) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => HomePage()),
+        MaterialPageRoute(builder: (_) => HomePage()),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(

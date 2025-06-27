@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../main.dart';
+import 'set_pin_page.dart';
 
 class SettingsPage extends StatefulWidget {
   final bool isDarkMode;
@@ -62,6 +63,25 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
+  Future<void> _handlePinToggle(bool val) async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() => _isPinLock = val);
+    widget.onPinChanged(val);
+    await prefs.setBool('is_pin_enabled', val);
+
+    if (val) {
+      final newPin = await Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => SetPinPage()),
+      );
+      if (newPin != null && newPin.length >= 4) {
+        await prefs.setString('user_pin_code', newPin);
+      }
+    } else {
+      await prefs.remove('user_pin_code');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -92,7 +112,7 @@ class _SettingsPageState extends State<SettingsPage> {
             subtitle: Text(_isPinLock ? 'Enabled' : 'Disabled'),
             secondary: Icon(Icons.lock),
             value: _isPinLock,
-            onChanged: _togglePinLock,
+            onChanged: _handlePinToggle,
           ),
 
           Divider(),

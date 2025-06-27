@@ -139,6 +139,7 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
+      backgroundColor: Color(0xFFE3F2FD),
 
       // Navigation Drawer
       drawer: Drawer(
@@ -189,7 +190,9 @@ class _HomePageState extends State<HomePage> {
                 Navigator.pop(context); // Close the drawer first
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => CalendarPage()),
+                  MaterialPageRoute(
+                    builder: (_) => CalendarPage(entries: entries),
+                    ),
                   );
                   },
                   ),
@@ -251,6 +254,7 @@ class _HomePageState extends State<HomePage> {
                                               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                                               ),
                                               ),
+
                                                Expanded(
                                                 child: entries.isEmpty
                                                 ? Center(child: Text("Let's write diary today."))
@@ -259,9 +263,19 @@ class _HomePageState extends State<HomePage> {
                                                   itemBuilder: (context, index) {
                                                     final entry = entries[index];
                                                      return Card(
-                                                      margin: EdgeInsets.all(8),
-                                                      child: ListTile(
-                                                        leading: Text(entry.emoji, style: TextStyle(fontSize: 30),
+                                                      margin: 
+                                                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                                        shape: RoundedRectangleBorder(
+                                                          borderRadius: BorderRadius.zero, // Rectangle shape
+                                                          side: BorderSide(color: Color.fromARGB(255, 227, 206, 172)),
+                                                        ),
+                                                        elevation: 2,
+                                                        child: ListTile(
+                                                          contentPadding:
+                                                              EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                                          leading: Text(
+                                                            entry.emoji,
+                                                            style: TextStyle(fontSize: 30),
                                                         ),
                                                         
                                                         title: Column(
@@ -321,6 +335,7 @@ class _HomePageState extends State<HomePage> {
                                                                                     ),
                                                                                     
                                                                                     floatingActionButton: FloatingActionButton(
+                                                                                      backgroundColor: Colors.orangeAccent,
                                                                                       child: Icon(Icons.add),
                                                                                       onPressed: () async {
                                                                                         final newEntry = await Navigator.push(

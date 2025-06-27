@@ -2,19 +2,27 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../models/diary_entry.dart';
 import '/pages/entry_form_page.dart';
+import 'package:collection/collection.dart';
 
 class CalendarPage extends StatefulWidget {
+  final List<DiaryEntry> entries;
+  CalendarPage({required this.entries});
+
   @override
   _CalendarPageState createState() => _CalendarPageState();
 }
 
 class _CalendarPageState extends State<CalendarPage> {
   DateTime _focusedMonth = DateTime.now();
+  DateTime? _selectedDate;
 
   List<DateTime> _getDaysInMonth(DateTime month) {
     final firstDay = DateTime(month.year, month.month, 1);
     final lastDay = DateTime(month.year, month.month + 1, 0);
-    return List.generate(lastDay.day, (i) => DateTime(month.year, month.month, i + 1));
+    return List.generate(
+      lastDay.day,
+      (i) => DateTime(month.year, month.month, i + 1),
+    );
   }
 
   void _goToPreviousMonth() {
@@ -35,17 +43,36 @@ class _CalendarPageState extends State<CalendarPage> {
       MaterialPageRoute(builder: (context) => EntryFormPage()),
     );
     if (newEntry != null) {
-      // You can pass the selectedDate into EntryFormPage if you want
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Diary added for ${DateFormat.yMMMd().format(selectedDate)}")),
+        SnackBar(
+          content: Text("Diary added for ${DateFormat.yMMMd().format(selectedDate)}"),
+        ),
       );
+      setState(() {}); // refresh UI if needed
     }
+  }
+
+  DiaryEntry? _getEntryForDate(DateTime date) {
+    return widget.entries.firstWhereOrNull(
+      (e) => DateFormat('yyyy-MM-dd').format(e.date) ==
+             DateFormat('yyyy-MM-dd').format(date),
+    );
+  }
+
+  List<DiaryEntry> _getEntriesForSelectedDate() {
+    if (_selectedDate == null) return [];
+    return widget.entries.where(
+      (e) =>
+        DateFormat('yyyy-MM-dd').format(e.date) ==
+        DateFormat('yyyy-MM-dd').format(_selectedDate!),
+    ).toList();
   }
 
   @override
   Widget build(BuildContext context) {
     final daysInMonth = _getDaysInMonth(_focusedMonth);
     final monthName = DateFormat.yMMMM().format(_focusedMonth);
+    final selectedEntries = _getEntriesForSelectedDate();
 
     return Scaffold(
       appBar: AppBar(
@@ -62,7 +89,10 @@ class _CalendarPageState extends State<CalendarPage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 IconButton(onPressed: _goToPreviousMonth, icon: Icon(Icons.chevron_left)),
-                Text(monthName, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                Text(
+                  monthName,
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
                 IconButton(onPressed: _goToNextMonth, icon: Icon(Icons.chevron_right)),
               ],
             ),
@@ -74,11 +104,16 @@ class _CalendarPageState extends State<CalendarPage> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-                  .map((d) => Expanded(
-                        child: Center(
-                            child: Text(d,
-                                style: TextStyle(fontWeight: FontWeight.bold))),
-                      ))
+                  .map(
+                    (d) => Expanded(
+                      child: Center(
+                        child: Text(
+                          d,
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ),
+                  )
                   .toList(),
             ),
           ),
@@ -94,25 +129,39 @@ class _CalendarPageState extends State<CalendarPage> {
               itemCount: daysInMonth.length + daysInMonth.first.weekday - 1,
               itemBuilder: (context, index) {
                 if (index < daysInMonth.first.weekday - 1) {
-                  return Container(); // empty for spacing
+                  return SizedBox(); // empty space for alignment
                 }
+
                 final actualIndex = index - (daysInMonth.first.weekday - 1);
                 final day = daysInMonth[actualIndex];
+                final entry = _getEntryForDate(day);
 
-                return Container(
-                  margin: EdgeInsets.all(4),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey.shade300),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Column(
-                    children: [
-                      Text('${day.day}', style: TextStyle(fontWeight: FontWeight.bold)),
-                      IconButton(
-                        icon: Icon(Icons.add_circle_outline, color: Colors.blue),
-                        onPressed: () => _createEntry(day),
-                      ),
-                    ],
+                return GestureDetector(
+                  onTap: () {
+                    if (entry == null) {
+                      _createEntry(day);
+                    } else {
+                      // Navigate to view/edit entry
+                    }
+                  },
+                  child: Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          '${day.day}',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                            color: entry != null ? Colors.black87 : Colors.black54,
+                          ),
+                        ),
+                        SizedBox(height: 4),
+                        entry == null
+                            ? Icon(Icons.add_circle_outline, size: 20, color: Colors.blue)
+                            : Text(entry.emoji, style: TextStyle(fontSize: 20)),
+                      ],
+                    ),
                   ),
                 );
               },

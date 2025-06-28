@@ -80,9 +80,11 @@ class _CalendarPageState extends State<CalendarPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Diary Calendar'),
-        backgroundColor: const Color.fromARGB(255, 30, 160, 216),
+        backgroundColor: const Color.fromARGB(255, 115, 204, 241),
         centerTitle: true,
       ),
+      backgroundColor: const Color.fromARGB(255, 207, 238, 251),
+
       body: Column(
         children: [
           // Month selector
@@ -100,6 +102,7 @@ class _CalendarPageState extends State<CalendarPage> {
               ],
             ),
           ),
+          
 
           // Weekday headers
           Padding(
@@ -166,7 +169,7 @@ class _CalendarPageState extends State<CalendarPage> {
                         SizedBox(height: 4),
                         entry == null
                             ? Icon(Icons.add_circle_outline,
-                            size: 20, color: Colors.blue)
+                            size: 20, color: Color.fromARGB(255, 137, 87, 0),)
                             : Text(entry.emoji,
                             style: TextStyle(fontSize: 20)),
                       ],

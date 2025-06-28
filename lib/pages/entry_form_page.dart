@@ -69,7 +69,7 @@ class _EntryFormPageState extends State<EntryFormPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.entry == null ? 'New Diary' : 'Edit Entry'),
-        backgroundColor: const Color.fromARGB(255, 30, 160, 216),
+        backgroundColor: const Color.fromARGB(255, 115, 204, 241),
 
         actions: [
           // IconButton for favorite toggle
@@ -84,18 +84,20 @@ class _EntryFormPageState extends State<EntryFormPage> {
               });
             },
           ),
+          
 
           // TextButton for saving the entry
           TextButton(
             onPressed: _submitEntry,
             child: Text(
               widget.entry == null ? 'Save' : 'Update',
-              style: TextStyle(color: Colors.white, fontSize: 16),
+              style: TextStyle(color: Colors.black, fontSize: 16),
             ),
           ),
         ],
 
                 ),
+      backgroundColor: const Color.fromARGB(255, 211, 236, 247),
 
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),

@@ -87,7 +87,7 @@ class _SettingsPageState extends State<SettingsPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Settings'),
-        backgroundColor: const Color.fromARGB(255, 30, 160, 216),
+      backgroundColor: const Color.fromARGB(255, 115, 204, 241),
       ),
       body: ListView(
         children: [
@@ -104,7 +104,9 @@ class _SettingsPageState extends State<SettingsPage> {
               themeNotifier.value = val ? ThemeMode.dark : ThemeMode.light;
               widget.onThemeChanged(val);
               },
+              
               ),
+              
 
           Divider(),
           SwitchListTile(
@@ -125,5 +127,6 @@ class _SettingsPageState extends State<SettingsPage> {
         ],
       ),
     );
+    
   }
 }

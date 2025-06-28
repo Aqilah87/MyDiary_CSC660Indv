@@ -119,7 +119,7 @@ import 'dart:io';
           return Scaffold(
       appBar: AppBar(
         title: const Text("Dear Diary"),
-        backgroundColor: Colors.blue,
+        backgroundColor: const Color.fromARGB(255, 115, 204, 241),
         centerTitle: true,
         actions: [
           IconButton(
@@ -138,7 +138,7 @@ import 'dart:io';
           ),
         ],
       ),         
-      backgroundColor: Colors.blue,
+      backgroundColor: const Color.fromARGB(255, 169, 229, 255),
 
       // Navigation Drawer
       drawer: Drawer(
@@ -146,7 +146,7 @@ import 'dart:io';
           padding: EdgeInsets.zero,
           children: [
             DrawerHeader(
-              decoration: BoxDecoration(color: Colors.blue),
+              decoration: BoxDecoration(color: Color.fromARGB(255, 115, 204, 241),),
               child: Text(
                 'My Diary',
                 style: TextStyle(color: Colors.white, fontSize: 24),
@@ -242,7 +242,7 @@ import 'dart:io';
                   padding: const EdgeInsets.all(8.0),
                   child: Image.asset(
                     'assets/dd2.png',
-                    height: 350,
+                    height: 300,
                     fit: BoxFit.contain,
                   ),
                 ),
@@ -250,7 +250,7 @@ import 'dart:io';
                   padding: const EdgeInsets.all(8.0),
                   child: Text(
                     'Welcome to My Diary 📖',
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
                   ),
                 ),
                 Expanded(
@@ -271,16 +271,18 @@ import 'dart:io';
                               duration: Duration(milliseconds: 300 + index * 40),
                               builder: (context, value, child) =>
                                   Opacity(opacity: value, child: child),
+
                               child: Card(
+                                color: Color(0xFFE0F2F1),
                                 margin:
                                     const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
                                   side: BorderSide(
-                                    color: const Color.fromARGB(255, 227, 206, 172),
+                                  color: Color.fromARGB(255, 5, 128, 121), // Light green border
                                   ),
                                 ),
-                                elevation: 3,
+                                elevation: 6,
                                 child: Padding(
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 16, vertical: 12),
@@ -324,7 +326,9 @@ import 'dart:io';
                                                   entry.title,
                                                   style: TextStyle(
                                                       fontWeight: FontWeight.bold,
-                                                      fontSize: 16),
+                                                      fontSize: 16,
+                                                      color: Colors.black87,
+                                                      ), 
                                                 ),
                                                 SizedBox(height: 4),
                                                 Text(
@@ -332,15 +336,17 @@ import 'dart:io';
                                                       .add_jm()
                                                       .format(entry.date),
                                                   style: TextStyle(
-                                                      color: Colors.grey[600],
+                                                      color: Colors.grey[800],
                                                       fontSize: 12),
                                                 ),
-                                                SizedBox(height: 6),
+                                                SizedBox(height: 4),
                                                 Text(
                                                   entry.text,
-                                                  style: TextStyle(fontSize: 14),
+                                                  style: TextStyle(fontSize: 14,
+                                                  color: Colors.black87,
+                                                  ),
                                                 ),
-                                                SizedBox(height: 8),
+                                                SizedBox(height: 4),
                                                 Row(
                                                   mainAxisAlignment: MainAxisAlignment.end,
                                                   children: [

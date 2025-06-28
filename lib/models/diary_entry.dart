@@ -1,5 +1,5 @@
 import 'package:hive/hive.dart';
-
+import 'package:hive_flutter/hive_flutter.dart';
 part 'diary_entry.g.dart'; // for generated code
 
 @HiveType(typeId: 0)
@@ -16,6 +16,9 @@ class DiaryEntry extends HiveObject {
   @HiveField(3)
   DateTime date;
 
+@HiveField(4)
+String? imagePath;
+
 //class DiaryEntry {
   //final String title;
   //final String text;
@@ -27,6 +30,7 @@ class DiaryEntry extends HiveObject {
     required this.text,
     required this.emoji,
     required this.date,
+    this.imagePath,
   });
 }
 

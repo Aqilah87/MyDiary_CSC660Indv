@@ -28,6 +28,9 @@ class _EntryFormPageState extends State<EntryFormPage> {
       _titleController.text = widget.entry!.title;
       _textController.text = widget.entry!.text;
       _selectedEmoji = widget.entry!.emoji;
+      if (widget.entry!.imagePath != null) {
+      _selectedImage = File(widget.entry!.imagePath!);
+      }
     }
   }
 
@@ -37,6 +40,7 @@ class _EntryFormPageState extends State<EntryFormPage> {
       text: _textController.text,
       emoji: _selectedEmoji,
       date: DateTime.now(),
+      imagePath: _selectedImage?.path,
     );
     Navigator.pop(context, newEntry);
   }

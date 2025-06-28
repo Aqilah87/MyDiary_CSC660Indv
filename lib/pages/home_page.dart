@@ -7,124 +7,123 @@ import '../screens/settings_page.dart';
 import '../theme_controller.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'dart:io';
 
-class HomePage extends StatefulWidget {
-  @override
-  _HomePageState createState() => _HomePageState();
-}
+      class HomePage extends StatefulWidget {
+        @override
+        _HomePageState createState() => _HomePageState();
+      }
 
-class _HomePageState extends State<HomePage> {
-  // 🔧 Theme & PIN toggle state
-  bool isDarkThemeEnabled = false;
-  bool isPinEnabled = false;
+      class _HomePageState extends State<HomePage> {
+        bool isDarkThemeEnabled = false;
+        bool isPinEnabled = false;
 
-  // 🔧 Your existing diary state
-  List<DiaryEntry> entries = [];
-  List<DiaryEntry> filteredEntries = [];
+        List<DiaryEntry> entries = [];
+        List<DiaryEntry> filteredEntries = [];
 
-  late Box<DiaryEntry> diaryBox;
+        late Box<DiaryEntry> diaryBox;
 
-  @override
-  void initState() {
-    super.initState();
-    _loadPinPreference();
-    _loadDiaryEntries();
-  }
+        @override
+        void initState() {
+          super.initState();
+          _loadPinPreference();
+          _loadDiaryEntries();
+        }
 
-  void _addNewEntry(DiaryEntry entry) async {
-    final box = Hive.box<DiaryEntry>('diary');
-      await box.add(entry); // ✅ Save to Hive
-      setState(() {
-        entries = box.values.toList(); // ✅ Reload
-        filteredEntries = entries; 
-    });
-  }
+        void _addNewEntry(DiaryEntry entry) async {
+          final box = Hive.box<DiaryEntry>('diary');
+          await box.add(entry);
+          setState(() {
+            entries = box.values.toList();
+            filteredEntries = entries;
+          });
+        }
 
-  void _editEntry(int index, DiaryEntry updatedEntry) async {
-    final key = diaryBox.keyAt(index);
-    await diaryBox.put(key, updatedEntry);
-    setState(() {
-      entries = diaryBox.values.toList();
-      filteredEntries = entries;
-    });
-  }
+        void _editEntry(int index, DiaryEntry updatedEntry) async {
+          final key = diaryBox.keyAt(index);
+          await diaryBox.put(key, updatedEntry);
+          setState(() {
+            entries = diaryBox.values.toList();
+            filteredEntries = entries;
+          });
+        }
 
-  void _deleteEntry(int index) async {
-    final key = diaryBox.keyAt(index);
-    await diaryBox.delete(key);
-    setState(() {
-      entries = diaryBox.values.toList();
-      filteredEntries = entries;
-    });
-  }
+        void _deleteEntry(int index) async {
+          final key = diaryBox.keyAt(index);
+          await diaryBox.delete(key);
+          setState(() {
+            entries = diaryBox.values.toList();
+            filteredEntries = entries;
+          });
+        }
 
-  void _loadDiaryEntries() async {
-    diaryBox = await Hive.openBox<DiaryEntry>('diary');
-    setState(() {
-      entries = diaryBox.values.toList();
-      filteredEntries = entries;
-    });
-    print('Loaded ${entries.length} entries');
-  }
+        void _loadDiaryEntries() async {
+          diaryBox = await Hive.openBox<DiaryEntry>('diary');
+          setState(() {
+            entries = diaryBox.values.toList();
+            filteredEntries = entries;
+          });
+          print('Loaded ${entries.length} entries');
+        }
 
-  void _loadPinPreference() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      isPinEnabled = prefs.getBool('pin_enabled') ?? false;
-    });
-  }
+        void _loadPinPreference() async {
+          final prefs = await SharedPreferences.getInstance();
+          setState(() {
+            isPinEnabled = prefs.getBool('pin_enabled') ?? false;
+          });
+        }
 
-  void _savePinPreference(bool value) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('pin_enabled', value);
-  }
+        void _savePinPreference(bool value) async {
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setBool('pin_enabled', value);
+        }
 
-  void _handleThemeChanged(bool val) {
-    setState(() => isDarkThemeEnabled = val);
-    themeNotifier.value = val ? ThemeMode.dark : ThemeMode.light;
-  }
+        void _handleThemeChanged(bool val) {
+          setState(() => isDarkThemeEnabled = val);
+          themeNotifier.value = val ? ThemeMode.dark : ThemeMode.light;
+        }
 
-  void _handlePinChanged(bool val) {
-    setState(() => isPinEnabled = val);
-    _savePinPreference(val);
-  }
+        void _handlePinChanged(bool val) {
+          setState(() => isPinEnabled = val);
+          _savePinPreference(val);
+        }
 
-  void _navigate(String label) {
-    Navigator.pop(context); // close drawer
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Navigated to: $label')),
-    );
-  }
+        void _navigate(String label) {
+          Navigator.pop(context);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Navigated to: $label')),
+          );
+        }
 
-  void _searchDiary(String query) {
-    final results = entries.where((entry) {
-      final title = entry.title.toLowerCase();
-      final text = entry.text.toLowerCase();
-      final search = query.toLowerCase();
-      return title.contains(search) || text.contains(search);
-    }).toList();
+        void _searchDiary(String query) {
+          final results = entries.where((entry) {
+            final title = entry.title.toLowerCase();
+            final text = entry.text.toLowerCase();
+            final search = query.toLowerCase();
+            return title.contains(search) || text.contains(search);
+          }).toList();
 
-    setState(() {
-      filteredEntries = results;
-    });
-  }
+          setState(() {
+            filteredEntries = results;
+          });
+        }
 
-  void _resetSearch() {
-    setState(() {
-      filteredEntries = entries;
-    });
-  }
+        void _resetSearch() {
+          setState(() {
+            filteredEntries = entries;
+          });
+        }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
+        @override
+        Widget build(BuildContext context) {
+          return Scaffold(
       appBar: AppBar(
-        title: Text("Dear Diary"),
+        title: const Text("Dear Diary"),
         backgroundColor: Colors.blue,
         centerTitle: true,
         actions: [
           IconButton(
-            icon: Icon(Icons.search),
+            icon: const Icon(Icons.search),
             onPressed: () async {
               final result = await showSearch(
                 context: context,
@@ -138,8 +137,8 @@ class _HomePageState extends State<HomePage> {
             },
           ),
         ],
-      ),
-      backgroundColor: Color(0xFFE3F2FD),
+      ),         
+      backgroundColor: Colors.blue,
 
       // Navigation Drawer
       drawer: Drawer(
@@ -163,8 +162,8 @@ class _HomePageState extends State<HomePage> {
                   context,
                   MaterialPageRoute(builder: (_) => HomePage()),
                   );
-                  },
-                  ),
+                },
+              ),
 
             // Create Diary
             ListTile(
@@ -178,25 +177,25 @@ class _HomePageState extends State<HomePage> {
                   );
                   if (newEntry != null) {
                         _addNewEntry(newEntry);
-                      }
-                      },
-                      ),
+                  }
+              },
+            ),
 
-            // Diary Calendar
-            ListTile(
-              leading: Icon(Icons.calendar_month),
-              title: Text('Diary Calendar'),
-              onTap: () {
-                Navigator.pop(context); // Close the drawer first
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => CalendarPage(entries: entries),
-                    ),
-                  );
-                  },
+                  // Diary Calendar
+                  ListTile(
+                    leading: Icon(Icons.calendar_month),
+                    title: Text('Diary Calendar'),
+                    onTap: () {
+                      Navigator.pop(context); // Close the drawer first
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => CalendarPage(entries: entries),
+                        ),
+                      );
+                    },
                   ),
-
+      
                   // Settings
                   ListTile(
                     leading: Icon(Icons.settings),
@@ -213,191 +212,246 @@ class _HomePageState extends State<HomePage> {
                               setState(() {
                                 isDarkThemeEnabled = val;
                                 // apply your theme change logic
-                                });
-                                },
-                                onPinChanged: (val) {
-                                  setState(() {
-                                    isPinEnabled = val;
-                                    // apply your pin lock logic
-                                    });
-                                    },
-                                    ),
-                                    ),
-                                    );
-                                    },
-                                    ),
-                                    
-                                    // About App 
-                                    ListTile(
-                                      leading: Icon(Icons.info_outline),
-                                      title: Text('About App'),
-                                      onTap: () => _navigate('About App'),
-                                      ),
-                                      ],
-                                      ),
-                                      ),
-                                      
-                                      body: Column(
+                              });
+                            },
+                            onPinChanged: (val) {
+                              setState(() {
+                                isPinEnabled = val;
+                                // apply your pin lock logic
+                              });
+                            },
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+      
+                  // About App 
+                  ListTile(
+                    leading: Icon(Icons.info_outline),
+                    title: Text('About App'),
+                    onTap: () => _navigate('About App'),
+                  ),
+                ],
+              ),
+            ),
+      
+            body: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Image.asset(
+                    'assets/dd2.png',
+                    height: 350,
+                    fit: BoxFit.contain,
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    'Welcome to My Diary 📖',
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                Expanded(
+                  child: entries.isEmpty
+                      ? Center(
+                          child: Text(
+                            "Let's write diary today.",
+                            style: TextStyle(fontSize: 16, color: Colors.black54),
+                          ),
+                        )
+                      : ListView.builder(
+                          physics: BouncingScrollPhysics(),
+                          itemCount: entries.length,
+                          itemBuilder: (context, index) {
+                            final entry = entries[index];
+                            return TweenAnimationBuilder<double>(
+                              tween: Tween(begin: 0, end: 1),
+                              duration: Duration(milliseconds: 300 + index * 40),
+                              builder: (context, value, child) =>
+                                  Opacity(opacity: value, child: child),
+                              child: Card(
+                                margin:
+                                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  side: BorderSide(
+                                    color: const Color.fromARGB(255, 227, 206, 172),
+                                  ),
+                                ),
+                                elevation: 3,
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 16, vertical: 12),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      // Row with emoji and content
+                                      Row(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
-                                          Padding(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: 
-                                            Image.asset('assets/dd2.png',
-                                            height: 350,
-                                            fit: BoxFit.contain,
+                                          Text(
+                                            entry.emoji,
+                                            style: TextStyle(fontSize: 30),
+                                          ),
+                                          SizedBox(width: 12),
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                // Image (if available)
+                                                if (entry.imagePath != null)
+                                                  Padding(
+                                                    padding:
+                                                        const EdgeInsets.only(bottom: 8),
+                                                    child: ClipRRect(
+                                                      borderRadius:
+                                                          BorderRadius.circular(8),
+                                                      child: Image.file(
+                                                        File(entry.imagePath!),
+                                                        height: 120,
+                                                        width: double.infinity,
+                                                        fit: BoxFit.cover,
+                                                        errorBuilder:
+                                                            (context, error, stackTrace) =>
+                                                                Icon(Icons.broken_image,
+                                                                    size: 40),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                Text(
+                                                  entry.title,
+                                                  style: TextStyle(
+                                                      fontWeight: FontWeight.bold,
+                                                      fontSize: 16),
+                                                ),
+                                                SizedBox(height: 4),
+                                                Text(
+                                                  DateFormat.yMMMd()
+                                                      .add_jm()
+                                                      .format(entry.date),
+                                                  style: TextStyle(
+                                                      color: Colors.grey[600],
+                                                      fontSize: 12),
+                                                ),
+                                                SizedBox(height: 6),
+                                                Text(
+                                                  entry.text,
+                                                  style: TextStyle(fontSize: 14),
+                                                ),
+                                                SizedBox(height: 8),
+                                                Row(
+                                                  mainAxisAlignment: MainAxisAlignment.end,
+                                                  children: [
+                                                    IconButton(
+                                                      icon: Icon(Icons.edit,
+                                                          color: Colors.orange),
+                                                      onPressed: () async {
+                                                        final updatedEntry =
+                                                            await Navigator.push(
+                                                          context,
+                                                          MaterialPageRoute(
+                                                            builder: (context) =>
+                                                                EntryFormPage(
+                                                                    entry: entry),
+                                                          ),
+                                                        );
+                                                        if (updatedEntry != null) {
+                                                          _editEntry(index, updatedEntry);
+                                                        }
+                                                      },
+                                                    ),
+                                                    IconButton(
+                                                      icon: Icon(Icons.delete,
+                                                          color: Colors.red),
+                                                      onPressed: () => _deleteEntry(index),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ],
                                             ),
-                                            ),
-                                            
-                                            Padding(
-                                              padding: const EdgeInsets.all(8.0),
-                                              child: Text('Welcome to My Diary 📖',
-                                              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                                              ),
-                                              ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                ),
+              ],
+            ),
+            floatingActionButton: FloatingActionButton(
+              backgroundColor: Colors.orangeAccent,
+              child: Icon(Icons.add),
+              onPressed: () async {
+                final newEntry = await Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => EntryFormPage()),
+                );
+                if (newEntry != null) {
+                  _addNewEntry(newEntry);
+                }
+              },
+            ),
+          );
+        }
+      }
 
-                                               Expanded(
-                                                child: entries.isEmpty
-                                                ? Center(child: Text("Let's write diary today."))
-                                                : ListView.builder(
-                                                  itemCount: entries.length,
-                                                  itemBuilder: (context, index) {
-                                                    final entry = entries[index];
-                                                     return Card(
-                                                      margin: 
-                                                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                                        shape: RoundedRectangleBorder(
-                                                          borderRadius: BorderRadius.zero, // Rectangle shape
-                                                          side: BorderSide(color: Color.fromARGB(255, 227, 206, 172)),
-                                                        ),
-                                                        elevation: 2,
-                                                        child: ListTile(
-                                                          contentPadding:
-                                                              EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                                          leading: Text(
-                                                            entry.emoji,
-                                                            style: TextStyle(fontSize: 30),
-                                                        ),
-                                                        
-                                                        title: Column(
-                                                           crossAxisAlignment: CrossAxisAlignment.start,
-                                                           children: [
-                                                            Text(
-                                                              entry.title,
-                                                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                                                              ),
-                                                              SizedBox(height: 4),
-                                                              Text(
-                                                                entry.text,
-                                                                style: TextStyle(fontWeight: FontWeight.normal, fontSize: 14),
-                                                                ),
-                                                                ],
-                                                                ),
-                                                                
-                                                                subtitle: Text(
-                                                                  DateFormat.yMMMd().add_jm().format(entry.date),
-                                                                  style: TextStyle(
-                                                                    color: Colors.grey[600], 
-                                                                    fontSize: 12,
-                                                                    ),
-                                                                    ),
-                                                                    
-                                                                    isThreeLine: false,
-                                                                    trailing: Row(
-                                                                      mainAxisSize: MainAxisSize.min,
-                                                                      children: [
-                                                                        IconButton(
-                                                                          icon: Icon(Icons.edit, color: Colors.orange),
-                                                                          onPressed: () async {
-                                                                            final updatedEntry = await Navigator.push(
-                                                                              context,
-                                                                              MaterialPageRoute(
-                                                                                builder: (context) =>
-                                                                                EntryFormPage(entry: entry)),
-                                                                                );
-                                                                                if (updatedEntry != null) {
-                                                                                  _editEntry(index, updatedEntry);
-                                                                                  }
-                                                                                  },
-                                                                                  ),
-                                                                                  
-                                                                                  IconButton(
-                                                                                    icon: Icon(Icons.delete, color: Colors.red),
-                                                                                    onPressed: () => _deleteEntry(index),
-                                                                                    ),
-                                                                                    ],
-                                                                                    ),
-                                                                                    ),
-                                                                                    );
-                                                                                    },
-                                                                                    ),
-                                                                                    ),
-                                                                                    ],
-                                                                                    ),
-                                                                                    
-                                                                                    floatingActionButton: FloatingActionButton(
-                                                                                      backgroundColor: Colors.orangeAccent,
-                                                                                      child: Icon(Icons.add),
-                                                                                      onPressed: () async {
-                                                                                        final newEntry = await Navigator.push(
-                                                                                          context,
-                                                                                          MaterialPageRoute(builder: (context) => EntryFormPage()),
-                                                                                          );
-                                                                                          if (newEntry != null) {
-                                                                                            _addNewEntry(newEntry);
-                                                                                            }
-                                                                                            },
-                                                                                            ),
-                                                                                            );
-                                                                                            }
-                                                                                            }
                                                                                             
-                                                                                            class DiarySearchDelegate extends SearchDelegate<String> {
-                                                                                              final List<DiaryEntry> entries;
-                                                                                              DiarySearchDelegate(this.entries);
-                                                                                              @override
-                                                                                              List<Widget> buildActions(BuildContext context) {
-                                                                                                return [
-                                                                                                  IconButton(
-                                                                                                    onPressed: () => query = '',
-                                                                                                    icon: Icon(Icons.clear),
-                                                                                                    ),
-                                                                                                    ];
-                                                                                                    }
-                                                                                                    
-                                                                                                    @override
-                                                                                                    Widget buildLeading(BuildContext context) {
-                                                                                                       return IconButton(
-                                                                                                        onPressed: () => close(context, ''),
-                                                                                                        icon: Icon(Icons.arrow_back),
-                                                                                                        );
-                                                                                                        }
-                                                                                                        
-                                                                                                        @override
-                                                                                                        Widget buildResults(BuildContext context) {
-                                                                                                          close(context, query);
-                                                                                                          return SizedBox.shrink();
-                                                                                                          }
-                                                                                                          
-                                                                                                          @override
-                                                                                                          Widget buildSuggestions(BuildContext context) {
-                                                                                                            final suggestions = entries.where((entry) {
-                                                                                                              return entry.title.toLowerCase().contains(query.toLowerCase()) ||
-                                                                                                              entry.text.toLowerCase().contains(query.toLowerCase());
-                                                                                                              }).toList();
-                                                                                                              return ListView.builder(
-                                                                                                                itemCount: suggestions.length,
-                                                                                                                itemBuilder: (context, index) {
-                                                                                                                  final result = suggestions[index];
-                                                                                                                  return ListTile(
-                                                                                                                    leading: Text(result.emoji, style: TextStyle(fontSize: 28)),
-                                                                                                                    title: Text(result.title),
-                                                                                                                    subtitle: Text(
-                                                                                                                      DateFormat.yMMMd().add_jm().format(result.date),
-                                                                                                                      style: TextStyle(fontSize: 12),
-                                                                                                                       ),
-                                                                                                                       onTap: () => close(context, result.title),
-                                                                                                                       );
-                                                                                                                       },
-                                                                                                                       );
-                                                                                                                       }
-                                                                                                                       }
+class DiarySearchDelegate extends SearchDelegate<String> {
+  final List<DiaryEntry> entries;
+
+  DiarySearchDelegate(this.entries) : super();
+
+  @override
+  List<Widget> buildActions(BuildContext context) {
+    return [
+      IconButton(
+        icon: const Icon(Icons.clear),
+        onPressed: () => query = '',
+      ),
+    ];
+  }
+
+  @override
+  Widget buildLeading(BuildContext context) {
+    return IconButton(
+      icon: const Icon(Icons.arrow_back),
+      onPressed: () => close(context, ''),
+    );
+  }
+
+  @override
+  Widget buildResults(BuildContext context) {
+    close(context, query);
+    return const SizedBox.shrink();
+  }
+
+  @override
+  Widget buildSuggestions(BuildContext context) {
+    final suggestions = entries.where((entry) {
+      return entry.title.toLowerCase().contains(query.toLowerCase()) ||
+          entry.text.toLowerCase().contains(query.toLowerCase());
+    }).toList();
+
+    return ListView.builder(
+      itemCount: suggestions.length,
+      itemBuilder: (context, index) {
+        final result = suggestions[index];
+        return ListTile(
+          leading: Text(result.emoji, style: const TextStyle(fontSize: 28)),
+          title: Text(result.title),
+          subtitle: Text(
+            DateFormat.yMMMd().add_jm().format(result.date),
+            style: const TextStyle(fontSize: 12),
+          ),
+          onTap: () => close(context, result.title),
+        );
+      },
+    );
+  }
+}

@@ -54,8 +54,10 @@ class _CalendarPageState extends State<CalendarPage> {
 
   DiaryEntry? _getEntryForDate(DateTime date) {
     return widget.entries.firstWhereOrNull(
-      (e) => DateFormat('yyyy-MM-dd').format(e.date) ==
-             DateFormat('yyyy-MM-dd').format(date),
+      (e) =>
+      e.date.year == date.year &&
+      e.date.month == date.month &&
+      e.date.day == date.day,
     );
   }
 
@@ -63,8 +65,9 @@ class _CalendarPageState extends State<CalendarPage> {
     if (_selectedDate == null) return [];
     return widget.entries.where(
       (e) =>
-        DateFormat('yyyy-MM-dd').format(e.date) ==
-        DateFormat('yyyy-MM-dd').format(_selectedDate!),
+      e.date.year == _selectedDate!.year &&
+      e.date.month == _selectedDate!.month &&
+      e.date.day == _selectedDate!.day
     ).toList();
   }
 
@@ -126,6 +129,7 @@ class _CalendarPageState extends State<CalendarPage> {
                 crossAxisCount: 7,
                 childAspectRatio: 1,
               ),
+
               itemCount: daysInMonth.length + daysInMonth.first.weekday - 1,
               itemBuilder: (context, index) {
                 if (index < daysInMonth.first.weekday - 1) {
@@ -138,11 +142,12 @@ class _CalendarPageState extends State<CalendarPage> {
 
                 return GestureDetector(
                   onTap: () {
+                    setState(() {
+                      _selectedDate = day; // ✅ Set selected date
+                    });
                     if (entry == null) {
                       _createEntry(day);
-                    } else {
-                      // Navigate to view/edit entry
-                    }
+                    } 
                   },
                   child: Center(
                     child: Column(
@@ -153,13 +158,17 @@ class _CalendarPageState extends State<CalendarPage> {
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 14,
-                            color: entry != null ? Colors.black87 : Colors.black54,
+                            color: entry != null 
+                            ? Colors.black87 
+                            : Colors.black54,
                           ),
                         ),
                         SizedBox(height: 4),
                         entry == null
-                            ? Icon(Icons.add_circle_outline, size: 20, color: Colors.blue)
-                            : Text(entry.emoji, style: TextStyle(fontSize: 20)),
+                            ? Icon(Icons.add_circle_outline,
+                            size: 20, color: Colors.blue)
+                            : Text(entry.emoji,
+                            style: TextStyle(fontSize: 20)),
                       ],
                     ),
                   ),
@@ -167,6 +176,34 @@ class _CalendarPageState extends State<CalendarPage> {
               },
             ),
           ),
+
+          // 📥 Diary entries below calendar
+          if (_selectedDate != null && selectedEntries.isNotEmpty)
+            Padding(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Divider(),
+                  Text(
+                    'Entries for ${DateFormat.yMMMMd().format(_selectedDate!)}',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 6),
+                  ...selectedEntries.map(
+                    (entry) => Card(
+                      child: ListTile(
+                        leading: Text(entry.emoji,
+                            style: TextStyle(fontSize: 22)),
+                        title: Text(entry.title),
+                        subtitle: Text(entry.text),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
         ],
       ),
     );

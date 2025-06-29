@@ -7,6 +7,7 @@ import '../screens/settings_page.dart';
 import '../theme_controller.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import '/pages/profile_page.dart';
 import 'dart:io';
 
       class HomePage extends StatefulWidget {
@@ -192,6 +193,17 @@ import 'dart:io';
                         MaterialPageRoute(
                           builder: (_) => CalendarPage(entries: entries),
                         ),
+                      );
+                    },
+                  ),
+
+                  ListTile(
+                    leading: Icon(Icons.person),
+                    title: Text('Profil'),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => ProfilePage()),
                       );
                     },
                   ),

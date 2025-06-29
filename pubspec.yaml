@@ -19,8 +19,8 @@ dependencies:
   hive_flutter: ^1.1.0
   path_provider: ^2.1.2
   collection: ^1.18.0
-
-
+shared_preferences: ^2.2.0
+image_picker: ^1.0.4
 
 
 dev_dependencies:
@@ -33,3 +33,4 @@ flutter:
   uses-material-design: true
   assets:
     - assets/dd2.png
+    - assets/avatar.jpg

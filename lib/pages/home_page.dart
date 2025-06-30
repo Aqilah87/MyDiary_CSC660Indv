@@ -8,7 +8,9 @@ import '../theme_controller.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '/pages/profile_page.dart';
+import '../search/diary_search_delegate.dart';
 import 'dart:io';
+import '../data/quote_prompt.dart';
 
       class HomePage extends StatefulWidget {
         @override
@@ -101,6 +103,9 @@ import 'dart:io';
             final title = entry.title.toLowerCase();
             final text = entry.text.toLowerCase();
             final search = query.toLowerCase();
+            final today = DateTime.now().day;
+            final dailyQuote = dailyQuotes[today % dailyQuotes.length];
+            final dailyPrompt = dailyPrompts[today % dailyPrompts.length];
             return title.contains(search) || text.contains(search);
           }).toList();
 
@@ -115,361 +120,339 @@ import 'dart:io';
           });
         }
 
-        @override
-        Widget build(BuildContext context) {
-          return Scaffold(
-      appBar: AppBar(
-        title: const Text("Dear Diary"),
-        backgroundColor: const Color.fromARGB(255, 115, 204, 241),
-        centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.search),
-            onPressed: () async {
-              final result = await showSearch(
-                context: context,
-                delegate: DiarySearchDelegate(entries),
+@override
+Widget build(BuildContext context) {
+  final today = DateTime.now().day;
+  final quotes = [
+    'You are stronger than you think.',
+    'Believe in your journey.',
+    'Small steps lead to big results.',
+  ];
+  final prompts = [
+    '📝 What made you smile today?',
+    '📝 What are you grateful for?',
+    '📝 What’s something you learned recently?',
+  ];
+  final dailyQuote = quotes[today % quotes.length];
+  final dailyPrompt = prompts[today % prompts.length];
+
+  return Scaffold(
+    appBar: AppBar(
+      title: const Text("Dear Diary"),
+      backgroundColor: const Color.fromARGB(255, 115, 204, 241),
+      centerTitle: true,
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.search),
+          onPressed: () async {
+            final result = await showSearch(
+              context: context,
+              delegate: DiarySearchDelegate(entries),
+            );
+            if (result == null || result.isEmpty) {
+              _resetSearch();
+            } else {
+              _searchDiary(result);
+            }
+          },
+        ),
+      ],
+    ),
+    backgroundColor: const Color.fromARGB(255, 169, 229, 255),
+    drawer: Drawer(
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: [
+          DrawerHeader(
+            decoration: BoxDecoration(color: Color.fromARGB(255, 115, 204, 241)),
+            child: Text(
+              'My Diary',
+              style: TextStyle(color: Colors.white, fontSize: 24),
+            ),
+          ),
+          ListTile(
+            leading: Icon(Icons.home),
+            title: Text('Home'),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (_) => HomePage()),
               );
-              if (result == null || result.isEmpty) {
-                _resetSearch();
-              } else {
-                _searchDiary(result);
+            },
+          ),
+          ListTile(
+            leading: Icon(Icons.create),
+            title: Text('Create Diary'),
+            onTap: () async {
+              Navigator.pop(context);
+              final newEntry = await Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => EntryFormPage()),
+              );
+              if (newEntry != null) {
+                _addNewEntry(newEntry);
               }
             },
           ),
+          ListTile(
+            leading: Icon(Icons.calendar_month),
+            title: Text('Diary Calendar'),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => CalendarPage(entries: entries),
+                ),
+              );
+            },
+          ),
+          ListTile(
+            leading: Icon(Icons.person),
+            title: Text('Profil'),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => ProfilePage()),
+              );
+            },
+          ),
+          ListTile(
+            leading: Icon(Icons.settings),
+            title: Text('Settings'),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => SettingsPage(
+                    isDarkMode: isDarkThemeEnabled,
+                    isPinEnabled: isPinEnabled,
+                    onThemeChanged: (val) {
+                      setState(() {
+                        isDarkThemeEnabled = val;
+                      });
+                    },
+                    onPinChanged: (val) {
+                      setState(() {
+                        isPinEnabled = val;
+                      });
+                    },
+                  ),
+                ),
+              );
+            },
+          ),
         ],
-      ),         
-      backgroundColor: const Color.fromARGB(255, 169, 229, 255),
+      ),
+    ),
 
-      // Navigation Drawer
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            DrawerHeader(
-              decoration: BoxDecoration(color: Color.fromARGB(255, 115, 204, 241),),
-              child: Text(
-                'My Diary',
-                style: TextStyle(color: Colors.white, fontSize: 24),
-              ),
-            ),
-            //home
-            ListTile(
-              leading: Icon(Icons.home),
-              title: Text('Home'),
-              onTap: () {
-                Navigator.pop(context); // close drawer
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (_) => HomePage()),
-                  );
-                },
-              ),
 
-            // Create Diary
-            ListTile(
-              leading: Icon(Icons.create),
-              title: Text('Create Diary'),
-              onTap: () async {
-                Navigator.pop(context); // close drawer
-                final newEntry = await Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => EntryFormPage()),
-                  );
-                  if (newEntry != null) {
-                        _addNewEntry(newEntry);
-                  }
-              },
-            ),
-
-                  // Diary Calendar
-                  ListTile(
-                    leading: Icon(Icons.calendar_month),
-                    title: Text('Diary Calendar'),
-                    onTap: () {
-                      Navigator.pop(context); // Close the drawer first
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => CalendarPage(entries: entries),
-                        ),
-                      );
-                    },
-                  ),
-
-                  ListTile(
-                    leading: Icon(Icons.person),
-                    title: Text('Profil'),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => ProfilePage()),
-                      );
-                    },
-                  ),
-      
-                  // Settings
-                  ListTile(
-                    leading: Icon(Icons.settings),
-                    title: Text('Settings'),
-                    onTap: () {
-                      Navigator.pop(context);
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => SettingsPage(
-                            isDarkMode: isDarkThemeEnabled,
-                            isPinEnabled: isPinEnabled,
-                            onThemeChanged: (val) {
-                              setState(() {
-                                isDarkThemeEnabled = val;
-                                // apply your theme change logic
-                              });
-                            },
-                            onPinChanged: (val) {
-                              setState(() {
-                                isPinEnabled = val;
-                                // apply your pin lock logic
-                              });
-                            },
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-      
-                  // About App 
-                  ListTile(
-                    leading: Icon(Icons.info_outline),
-                    title: Text('About App'),
-                    onTap: () => _navigate('About App'),
-                  ),
-                ],
-              ),
-            ),
-      
-            body: Column(
+    // ⬇️ This is the actual content body
+    body: Column(
+      children: [
+        // 🌟 Daily Quote Card
+        Card(
+          color: const Color(0xFFFFF9C4),
+          margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 16),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          elevation: 3,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Image.asset(
-                    'assets/dd2.png',
-                    height: 300,
-                    fit: BoxFit.contain,
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text(
-                    'Welcome to My Diary 📖',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
-                  ),
-                ),
-                Expanded(
-                  child: entries.isEmpty
-                      ? Center(
-                          child: Text(
-                            "Let's write diary today.",
-                            style: TextStyle(fontSize: 16, color: Colors.black54),
-                          ),
-                        )
-                      : ListView.builder(
-                          physics: BouncingScrollPhysics(),
-                          itemCount: entries.length,
-                          itemBuilder: (context, index) {
-                            final entry = entries[index];
-                            return TweenAnimationBuilder<double>(
-                              tween: Tween(begin: 0, end: 1),
-                              duration: Duration(milliseconds: 300 + index * 40),
-                              builder: (context, value, child) =>
-                                  Opacity(opacity: value, child: child),
-
-                              child: Card(
-                                color: Color(0xFFE0F2F1),
-                                margin:
-                                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  side: BorderSide(
-                                  color: Color.fromARGB(255, 5, 128, 121), // Light green border
-                                  ),
-                                ),
-                                elevation: 6,
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 16, vertical: 12),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      // Row with emoji and content
-                                      Row(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            entry.emoji,
-                                            style: TextStyle(fontSize: 30),
-                                          ),
-                                          SizedBox(width: 12),
-                                          Expanded(
-                                            child: Column(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                              children: [
-                                                // Image (if available)
-                                                if (entry.imagePath != null)
-                                                  Padding(
-                                                    padding:
-                                                        const EdgeInsets.only(bottom: 8),
-                                                    child: ClipRRect(
-                                                      borderRadius:
-                                                          BorderRadius.circular(8),
-                                                      child: Image.file(
-                                                        File(entry.imagePath!),
-                                                        height: 120,
-                                                        width: double.infinity,
-                                                        fit: BoxFit.cover,
-                                                        errorBuilder:
-                                                            (context, error, stackTrace) =>
-                                                                Icon(Icons.broken_image,
-                                                                    size: 40),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                Text(
-                                                  entry.title,
-                                                  style: TextStyle(
-                                                      fontWeight: FontWeight.bold,
-                                                      fontSize: 16,
-                                                      color: Colors.black87,
-                                                      ), 
-                                                ),
-                                                SizedBox(height: 4),
-                                                Text(
-                                                  DateFormat.yMMMd()
-                                                      .add_jm()
-                                                      .format(entry.date),
-                                                  style: TextStyle(
-                                                      color: Colors.grey[800],
-                                                      fontSize: 12),
-                                                ),
-                                                SizedBox(height: 4),
-                                                Text(
-                                                  entry.text,
-                                                  style: TextStyle(fontSize: 14,
-                                                  color: Colors.black87,
-                                                  ),
-                                                ),
-                                                SizedBox(height: 4),
-                                                Row(
-                                                  mainAxisAlignment: MainAxisAlignment.end,
-                                                  children: [
-                                                    IconButton(
-                                                      icon: Icon(Icons.edit,
-                                                          color: Colors.orange),
-                                                      onPressed: () async {
-                                                        final updatedEntry =
-                                                            await Navigator.push(
-                                                          context,
-                                                          MaterialPageRoute(
-                                                            builder: (context) =>
-                                                                EntryFormPage(
-                                                                    entry: entry),
-                                                          ),
-                                                        );
-                                                        if (updatedEntry != null) {
-                                                          _editEntry(index, updatedEntry);
-                                                        }
-                                                      },
-                                                    ),
-                                                    IconButton(
-                                                      icon: Icon(Icons.delete,
-                                                          color: Colors.red),
-                                                      onPressed: () => _deleteEntry(index),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            );
-                          },
+                Row(
+                  children: [
+                    Icon(Icons.lightbulb_outline, color: Colors.orange),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        '"$dailyQuote"',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontStyle: FontStyle.italic,
+                          fontSize: 16,
+                          color: Colors.black87,
                         ),
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 12),
+                Row(
+                  children: [
+                    Icon(Icons.edit_note, color: Colors.teal),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        dailyPrompt,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 15, color: Colors.black87),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
-            floatingActionButton: FloatingActionButton(
-              backgroundColor: Colors.orangeAccent,
-              child: Icon(Icons.add),
-              onPressed: () async {
-                final newEntry = await Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => EntryFormPage()),
-                );
-                if (newEntry != null) {
-                  _addNewEntry(newEntry);
-                }
-              },
-            ),
-          );
-        }
-      }
-
-                                                                                            
-class DiarySearchDelegate extends SearchDelegate<String> {
-  final List<DiaryEntry> entries;
-
-  DiarySearchDelegate(this.entries) : super();
-
-  @override
-  List<Widget> buildActions(BuildContext context) {
-    return [
-      IconButton(
-        icon: const Icon(Icons.clear),
-        onPressed: () => query = '',
-      ),
-    ];
-  }
-
-  @override
-  Widget buildLeading(BuildContext context) {
-    return IconButton(
-      icon: const Icon(Icons.arrow_back),
-      onPressed: () => close(context, ''),
-    );
-  }
-
-  @override
-  Widget buildResults(BuildContext context) {
-    close(context, query);
-    return const SizedBox.shrink();
-  }
-
-  @override
-  Widget buildSuggestions(BuildContext context) {
-    final suggestions = entries.where((entry) {
-      return entry.title.toLowerCase().contains(query.toLowerCase()) ||
-          entry.text.toLowerCase().contains(query.toLowerCase());
-    }).toList();
-
-    return ListView.builder(
-      itemCount: suggestions.length,
-      itemBuilder: (context, index) {
-        final result = suggestions[index];
-        return ListTile(
-          leading: Text(result.emoji, style: const TextStyle(fontSize: 28)),
-          title: Text(result.title),
-          subtitle: Text(
-            DateFormat.yMMMd().add_jm().format(result.date),
-            style: const TextStyle(fontSize: 12),
           ),
-          onTap: () => close(context, result.title),
+        ),
+
+        // 📋 Diary Entry List or Empty State
+        Expanded(
+          child: filteredEntries.isEmpty
+              ? Center(
+                  child: Text(
+                    "Let's write a diary today.",
+                    style: TextStyle(fontSize: 16, color: Colors.black54),
+                  ),
+                )
+              : ListView.builder(
+                  physics: BouncingScrollPhysics(),
+                  itemCount: filteredEntries.length,
+                  itemBuilder: (context, index) {
+                    final entry = filteredEntries[index];
+                    return Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: Card(
+                        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        color: Color(0xFFE0F2F1),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          side: BorderSide(color: Color.fromARGB(255, 5, 128, 121)),
+                        ),
+                        elevation: 5,
+
+                      child: Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // 🟡 Emoji + Title + Buttons
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(entry.emoji, style: TextStyle(fontSize: 28)),
+                                SizedBox(width: 10),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        entry.title,
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16,
+                                          color: Colors.black87,
+                                        ),
+                                      ),
+                                      SizedBox(height: 4),
+                                      if (entry.text.trim().isNotEmpty)
+                                        Text(
+                                          entry.text,
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 14,
+                                            color: Colors.black87,
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                                IconButton(
+                                  icon: Icon(Icons.edit, color: Colors.orange),
+                                  onPressed: () async {
+                                    final updated = await Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => EntryFormPage(entry: entry),
+                                      ),
+                                    );
+                                    if (updated != null) {
+                                      _editEntry(index, updated);
+                                    }
+                                  },
+                                ),
+                                IconButton(
+                                  icon: Icon(Icons.delete, color: Colors.red),
+                                  onPressed: () async {
+                                    final confirm = await showDialog(
+                                      context: context,
+                                      builder: (_) => AlertDialog(
+                                        title: Text('Delete Entry?'),
+                                        content: Text('Are you sure you want to delete this diary?'),
+                                        actions: [
+                                          TextButton(
+                                              onPressed: () => Navigator.pop(context),
+                                              child: Text('Cancel')),
+                                          ElevatedButton(
+                                            style:
+                                                ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                                            onPressed: () => Navigator.pop(context, true),
+                                            child: Text('Delete'),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                    if (confirm == true) {
+                                      _deleteEntry(index);
+                                    }
+                                  },
+                                ),
+                              ],
+                            ),
+
+                            // 🖼️ Gambar
+                            if (entry.imagePath != null && entry.imagePath!.isNotEmpty)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 8),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: Image.file(
+                                    File(entry.imagePath!),
+                                    height: 140,
+                                    width: double.infinity,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) =>
+                                        Icon(Icons.broken_image, size: 48),
+                                  ),
+                                ),
+                              ),
+
+                            // 📅 Tarikh dan Masa
+                            Padding(
+                              padding: const EdgeInsets.only(top: 6),
+                              child: Text(
+                                DateFormat.yMMMd().add_jm().format(entry.date),
+                                style: TextStyle(fontSize: 12, color: Colors.grey[700]),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      ),
+                    );
+                  },
+                ),
+        ),
+      ],
+    ),
+
+    // 🧡 Floating Action Button
+    floatingActionButton: FloatingActionButton(
+      backgroundColor: Colors.orangeAccent,
+      child: Icon(Icons.add),
+      onPressed: () async {
+        final newEntry = await Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => EntryFormPage()),
         );
+        if (newEntry != null) {
+          _addNewEntry(newEntry);
+        }
       },
-    );
-  }
+    ),
+  );
 }
+      }

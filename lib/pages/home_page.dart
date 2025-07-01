@@ -11,6 +11,7 @@ import '/pages/profile_page.dart';
 import '../search/diary_search_delegate.dart';
 import 'dart:io';
 import '../data/quote_prompt.dart';
+import '/pages/onboard_page.dart';
 
       class HomePage extends StatefulWidget {
         @override

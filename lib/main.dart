@@ -59,9 +59,7 @@ class MyApp extends StatelessWidget {
           primarySwatch: Colors.purple,
         ),
         themeMode: mode,
-        home: showOnboarding
-            ? OnboardPage()
-            : (isPinEnabled ? LockScreen() : HomePage()),
+      home: OnboardPage(),
       ),
     );
   }

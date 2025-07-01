@@ -19,12 +19,6 @@ class DiaryEntry extends HiveObject {
 @HiveField(4)
 String? imagePath;
 
-//class DiaryEntry {
-  //final String title;
-  //final String text;
-  //final String emoji;
-  //final DateTime date;
-
   DiaryEntry({
     required this.title,
     required this.text,

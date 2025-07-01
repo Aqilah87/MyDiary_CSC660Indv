@@ -3,6 +3,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../models/diary_entry.dart';
 import 'dart:io';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as path;
 
 class EntryFormPage extends StatefulWidget {
   final DiaryEntry? entry;
@@ -28,12 +30,30 @@ class _EntryFormPageState extends State<EntryFormPage> {
       _titleController.text = widget.entry!.title;
       _textController.text = widget.entry!.text;
       _selectedEmoji = widget.entry!.emoji;
+
       if (widget.entry!.imagePath != null) {
       _selectedImage = File(widget.entry!.imagePath!);
       }
     }
   }
+    //  Save image to permanent local storage
+    Future<String> saveImagePermanently(File image) async {
+      final appDir = await getApplicationDocumentsDirectory();
+      final filename = path.basename(image.path);
+      final savedImage = await image.copy('${appDir.path}/$filename');
+      return savedImage.path;
+    }
+  Future<void> _pickImage() async {
+    final picker = ImagePicker();
+    final picked = await picker.pickImage(source: ImageSource.gallery);
+    if (picked != null) {
+      setState(() {
+        _selectedImage = File(picked.path);
+      });
+    }
+  }
 
+  // ✅ Save entry and return it
   void _submitEntry() {
     final newEntry = DiaryEntry(
       title: _titleController.text,
@@ -45,15 +65,7 @@ class _EntryFormPageState extends State<EntryFormPage> {
     Navigator.pop(context, newEntry);
   }
 
-  Future<void> _pickImage() async {
-    final picker = ImagePicker();
-    final picked = await picker.pickImage(source: ImageSource.gallery);
-    if (picked != null) {
-      setState(() {
-        _selectedImage = File(picked.path);
-      });
-    }
-  }
+
 
   @override
   void dispose() {

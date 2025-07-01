@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import '../models/diary_entry.dart';
 import '/pages/entry_form_page.dart';
 import 'package:collection/collection.dart';
+import 'dart:io';
 
 class CalendarPage extends StatefulWidget {
   final List<DiaryEntry> entries;
@@ -42,6 +43,7 @@ class _CalendarPageState extends State<CalendarPage> {
       context,
       MaterialPageRoute(builder: (context) => EntryFormPage()),
     );
+
     if (newEntry != null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -69,6 +71,39 @@ class _CalendarPageState extends State<CalendarPage> {
       e.date.month == _selectedDate!.month &&
       e.date.day == _selectedDate!.day
     ).toList();
+  }
+
+  void _showImageDialog(String imagePath) {
+    showDialog(
+      context: context,
+      builder: (_) => Dialog(
+        backgroundColor: Colors.transparent,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: Image.file(
+            File(imagePath),
+            fit: BoxFit.cover,
+            errorBuilder: (_, __, ___) =>
+                Icon(Icons.broken_image, size: 80, color: Colors.grey),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmojiWithImageTap(DiaryEntry entry) {
+    return InkWell(
+      onTap: () {
+        if (entry.imagePath != null) {
+          _showImageDialog(entry.imagePath!);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("No image attached to this entry.")),
+          );
+        }
+      },
+      child: Text(entry.emoji, style: TextStyle(fontSize: 28)),
+    );
   }
 
   @override

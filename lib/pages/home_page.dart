@@ -262,7 +262,7 @@ Widget build(BuildContext context) {
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Row(
                   children: [
@@ -284,6 +284,7 @@ Widget build(BuildContext context) {
                 SizedBox(height: 12),
                 Row(
                   children: [
+                    // ✍️ Prompt section
                     Icon(Icons.edit_note, color: Colors.teal),
                     SizedBox(width: 8),
                     Expanded(

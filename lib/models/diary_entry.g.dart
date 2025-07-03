@@ -22,13 +22,14 @@ class DiaryEntryAdapter extends TypeAdapter<DiaryEntry> {
       emoji: fields[2] as String,
       date: fields[3] as DateTime,
       imagePath: fields[4] as String?,
+      // fontName removed ✅
     );
   }
 
   @override
   void write(BinaryWriter writer, DiaryEntry obj) {
     writer
-      ..writeByte(5)
+      ..writeByte(5) // ✅ Only 5 fields now
       ..writeByte(0)
       ..write(obj.title)
       ..writeByte(1)

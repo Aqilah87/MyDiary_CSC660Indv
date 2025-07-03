@@ -18,7 +18,7 @@ class OnboardPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 162, 226, 254),
+      backgroundColor: Color.fromARGB(255, 224, 215, 246),
       body: SafeArea(
         child: Stack(
           children: [
@@ -68,7 +68,7 @@ class OnboardPage extends StatelessWidget {
               child: ElevatedButton(
                 onPressed: () => _completeOnboarding(context),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.orange,
+                  backgroundColor: const Color.fromARGB(255, 4, 84, 150),
                 ),
               child: Text(
                 'Next',

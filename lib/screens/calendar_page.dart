@@ -115,10 +115,10 @@ class _CalendarPageState extends State<CalendarPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Diary Calendar'),
-        backgroundColor: const Color.fromARGB(255, 115, 204, 241),
+        backgroundColor: Color(0xFF009DC4),
         centerTitle: true,
       ),
-      backgroundColor: const Color.fromARGB(255, 207, 238, 251),
+      backgroundColor: Color.fromARGB(255, 173, 226, 238),
 
       body: Column(
         children: [
@@ -204,7 +204,7 @@ class _CalendarPageState extends State<CalendarPage> {
                         SizedBox(height: 4),
                         entry == null
                             ? Icon(Icons.add_circle_outline,
-                            size: 20, color: Color.fromARGB(255, 137, 87, 0),)
+                            size: 20, color: Color.fromARGB(255, 7, 70, 86),)
                             : Text(entry.emoji,
                             style: TextStyle(fontSize: 20)),
                       ],

@@ -137,127 +137,139 @@ Widget build(BuildContext context) {
   final dailyQuote = quotes[today % quotes.length];
   final dailyPrompt = prompts[today % prompts.length];
 
-  return Scaffold(
-    appBar: AppBar(
-      title: const Text("Dear Diary"),
-      backgroundColor: const Color.fromARGB(255, 115, 204, 241),
-      centerTitle: true,
-      actions: [
-        IconButton(
-          icon: const Icon(Icons.search),
-          onPressed: () async {
-            final result = await showSearch(
-              context: context,
-              delegate: DiarySearchDelegate(entries),
-            );
-            if (result == null || result.isEmpty) {
-              _resetSearch();
-            } else {
-              _searchDiary(result);
-            }
-          },
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          "Dear Diary",
+          style: Theme.of(context).appBarTheme.titleTextStyle,
         ),
-      ],
-    ),
-    backgroundColor: const Color.fromARGB(255, 169, 229, 255),
-    drawer: Drawer(
-      child: ListView(
-        padding: EdgeInsets.zero,
-        children: [
-          DrawerHeader(
-            decoration: BoxDecoration(color: Color.fromARGB(255, 115, 204, 241)),
-            child: Text(
-              'My Diary',
-              style: TextStyle(color: Colors.white, fontSize: 24),
-            ),
-          ),
-          ListTile(
-            leading: Icon(Icons.home),
-            title: Text('Home'),
-            onTap: () {
-              Navigator.pop(context);
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (_) => HomePage()),
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
+        centerTitle: true,
+        iconTheme: Theme.of(context).appBarTheme.iconTheme ??
+            IconThemeData(color: Theme.of(context).iconTheme.color),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.search, color: Theme.of(context).iconTheme.color),
+            onPressed: () async {
+              final result = await showSearch(
+                context: context,
+                delegate: DiarySearchDelegate(entries),
               );
-            },
-          ),
-          ListTile(
-            leading: Icon(Icons.create),
-            title: Text('Create Diary'),
-            onTap: () async {
-              Navigator.pop(context);
-              final newEntry = await Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => EntryFormPage()),
-              );
-              if (newEntry != null) {
-                _addNewEntry(newEntry);
+              if (result == null || result.isEmpty) {
+                _resetSearch();
+              } else {
+                _searchDiary(result);
               }
-            },
-          ),
-          ListTile(
-            leading: Icon(Icons.calendar_month),
-            title: Text('Diary Calendar'),
-            onTap: () {
-              Navigator.pop(context);
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => CalendarPage(entries: entries),
-                ),
-              );
-            },
-          ),
-          ListTile(
-            leading: Icon(Icons.person),
-            title: Text('Profil'),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => ProfilePage()),
-              );
-            },
-          ),
-          ListTile(
-            leading: Icon(Icons.settings),
-            title: Text('Settings'),
-            onTap: () {
-              Navigator.pop(context);
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => SettingsPage(
-                    isDarkMode: isDarkThemeEnabled,
-                    isPinEnabled: isPinEnabled,
-                    onThemeChanged: (val) {
-                      setState(() {
-                        isDarkThemeEnabled = val;
-                      });
-                    },
-                    onPinChanged: (val) {
-                      setState(() {
-                        isPinEnabled = val;
-                      });
-                    },
-                  ),
-                ),
-              );
             },
           ),
         ],
       ),
-    ),
 
+      // 👇 Theme-aware background
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            DrawerHeader(
+              decoration: BoxDecoration(
+                color: Theme.of(context).appBarTheme.backgroundColor,
+              ),
+              child: Text(
+                'My Diary',
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).appBarTheme.foregroundColor,
+                ),
+              ),
+            ),
+            ListTile(
+              leading: Icon(Icons.home, color: Theme.of(context).iconTheme.color),
+              title: Text('Home', style: Theme.of(context).textTheme.bodyLarge),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (_) => HomePage()),
+                );
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.create, color: Theme.of(context).iconTheme.color),
+              title: Text('Create Diary', style: Theme.of(context).textTheme.bodyLarge),
+              onTap: () async {
+                Navigator.pop(context);
+                final newEntry = await Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => EntryFormPage()),
+                );
+                if (newEntry != null) {
+                  _addNewEntry(newEntry);
+                }
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.calendar_month, color: Theme.of(context).iconTheme.color),
+              title: Text('Diary Calendar', style: Theme.of(context).textTheme.bodyLarge),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => CalendarPage(entries: entries),
+                  ),
+                );
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.person, color: Theme.of(context).iconTheme.color),
+              title: Text('Profil', style: Theme.of(context).textTheme.bodyLarge),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => ProfilePage()),
+                );
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.settings, color: Theme.of(context).iconTheme.color),
+              title: Text('Settings', style: Theme.of(context).textTheme.bodyLarge),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => SettingsPage(
+                      isDarkMode: isDarkThemeEnabled,
+                      isPinEnabled: isPinEnabled,
+                      onThemeChanged: (val) {
+                        setState(() {
+                          isDarkThemeEnabled = val;
+                        });
+                      },
+                      onPinChanged: (val) {
+                        setState(() {
+                          isPinEnabled = val;
+                        });
+                      },
+                    ),
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
 
     // ⬇️ This is the actual content body
     body: Column(
       children: [
         // 🌟 Daily Quote Card
         Card(
-          color: const Color(0xFFFFF9C4),
+          color: Color.fromARGB(255, 224, 215, 246), // Lavender Mist
           margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 16),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           elevation: 3,
           child: Padding(
             padding: const EdgeInsets.all(16),
@@ -275,7 +287,8 @@ Widget build(BuildContext context) {
                         style: TextStyle(
                           fontStyle: FontStyle.italic,
                           fontSize: 16,
-                          color: Colors.black87,
+                          color: Color(0xFF3C225C),
+                        fontWeight: FontWeight.w500,
                         ),
                       ),
                     ),
@@ -319,10 +332,10 @@ Widget build(BuildContext context) {
                       padding: const EdgeInsets.only(top: 8),
                       child: Card(
                         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        color: Color(0xFFE0F2F1),
+                        color: Color(0xFFE0F7F4), // Soft Mint
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
-                          side: BorderSide(color: Color.fromARGB(255, 5, 128, 121)),
+                          side: BorderSide(color: Color.fromARGB(255, 194, 200, 209)),
                         ),
                         elevation: 5,
 
@@ -377,7 +390,7 @@ Widget build(BuildContext context) {
                                   },
                                 ),
                                 IconButton(
-                                  icon: Icon(Icons.delete, color: Colors.red),
+                                  icon: Icon(Icons.delete, color: const Color.fromARGB(255, 164, 12, 1)),
                                   onPressed: () async {
                                     final confirm = await showDialog(
                                       context: context,
@@ -427,7 +440,7 @@ Widget build(BuildContext context) {
                               padding: const EdgeInsets.only(top: 6),
                               child: Text(
                                 DateFormat.yMMMd().add_jm().format(entry.date),
-                                style: TextStyle(fontSize: 12, color: Colors.grey[700]),
+                                style: TextStyle(fontSize: 12, color: Colors.black87),
                               ),
                             ),
                           ],
@@ -443,7 +456,7 @@ Widget build(BuildContext context) {
 
     // 🧡 Floating Action Button
     floatingActionButton: FloatingActionButton(
-      backgroundColor: Colors.orangeAccent,
+      backgroundColor: Colors.orange,
       child: Icon(Icons.add),
       onPressed: () async {
         final newEntry = await Navigator.push(

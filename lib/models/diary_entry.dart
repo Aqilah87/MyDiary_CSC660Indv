@@ -25,6 +25,7 @@ String? imagePath;
     required this.emoji,
     required this.date,
     this.imagePath,
+
   });
 }
 

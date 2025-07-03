@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../models/diary_entry.dart';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
@@ -18,8 +17,8 @@ class EntryFormPage extends StatefulWidget {
 class _EntryFormPageState extends State<EntryFormPage> {
   final _textController = TextEditingController();
   final _titleController = TextEditingController();
+
   String _selectedEmoji = '😊';
-  String _selectedFont = 'Roboto';
   File? _selectedImage;
   bool isFavorite = false;
 
@@ -32,17 +31,18 @@ class _EntryFormPageState extends State<EntryFormPage> {
       _selectedEmoji = widget.entry!.emoji;
 
       if (widget.entry!.imagePath != null) {
-      _selectedImage = File(widget.entry!.imagePath!);
+        _selectedImage = File(widget.entry!.imagePath!);
       }
     }
   }
-    //  Save image to permanent local storage
-    Future<String> saveImagePermanently(File image) async {
-      final appDir = await getApplicationDocumentsDirectory();
-      final filename = path.basename(image.path);
-      final savedImage = await image.copy('${appDir.path}/$filename');
-      return savedImage.path;
-    }
+
+  Future<String> saveImagePermanently(File image) async {
+    final appDir = await getApplicationDocumentsDirectory();
+    final filename = path.basename(image.path);
+    final savedImage = await image.copy('${appDir.path}/$filename');
+    return savedImage.path;
+  }
+
   Future<void> _pickImage() async {
     final picker = ImagePicker();
     final picked = await picker.pickImage(source: ImageSource.gallery);
@@ -53,7 +53,6 @@ class _EntryFormPageState extends State<EntryFormPage> {
     }
   }
 
-  // ✅ Save entry and return it
   void _submitEntry() {
     final newEntry = DiaryEntry(
       title: _titleController.text,
@@ -65,8 +64,6 @@ class _EntryFormPageState extends State<EntryFormPage> {
     Navigator.pop(context, newEntry);
   }
 
-
-
   @override
   void dispose() {
     _titleController.dispose();
@@ -76,120 +73,94 @@ class _EntryFormPageState extends State<EntryFormPage> {
 
   @override
   Widget build(BuildContext context) {
-    final availableFonts = ['Roboto', 'Lobster', 'Dancing Script', 'Pacifico'];
+    final theme = Theme.of(context);
 
     return Scaffold(
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        title: Text(widget.entry == null ? 'New Diary' : 'Edit Entry'),
-        backgroundColor: const Color.fromARGB(255, 115, 204, 241),
-
+        title: Text(
+          widget.entry == null ? 'New Diary' : 'Edit Entry',
+          style: theme.appBarTheme.titleTextStyle,
+        ),
+        backgroundColor: theme.appBarTheme.backgroundColor,
         actions: [
-          // IconButton for favorite toggle
           IconButton(
             icon: Icon(
               isFavorite ? Icons.star : Icons.star_border,
-              color: isFavorite ? Colors.yellow[700] : Colors.white,
-              ),
-            onPressed: () {
-              setState(() {
-                isFavorite = !isFavorite;
-              });
-            },
+              color: isFavorite ? Colors.yellow[700] : theme.iconTheme.color,
+            ),
+            onPressed: () => setState(() => isFavorite = !isFavorite),
           ),
-          
-
-          // TextButton for saving the entry
           TextButton(
             onPressed: _submitEntry,
             child: Text(
               widget.entry == null ? 'Save' : 'Update',
-              style: TextStyle(color: Colors.black, fontSize: 16),
+              style: TextStyle(
+                color: theme.colorScheme.onPrimary,
+                fontSize: 16,
+              ),
             ),
           ),
         ],
-
-                ),
-      backgroundColor: const Color.fromARGB(255, 211, 236, 247),
-
+      ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Title',
-            style: TextStyle(
-              fontSize: 20,fontWeight: FontWeight.bold),
+            Text(
+              'Title',
+              style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 4),
+            const SizedBox(height: 4),
             TextField(
-            controller: _titleController,
-            decoration: InputDecoration(
-              hintText: 'Enter title...',
-              border: OutlineInputBorder(),
+              controller: _titleController,
+              style: theme.textTheme.bodyMedium,
+              decoration: const InputDecoration(
+                hintText: 'Enter title...',
+                border: OutlineInputBorder(),
+              ),
             ),
-          ),
-          SizedBox(height: 8),
+            const SizedBox(height: 8),
             TextField(
               controller: _textController,
               maxLines: 4,
-              decoration: InputDecoration(
+              style: theme.textTheme.bodyMedium,
+              decoration: const InputDecoration(
                 labelText: 'What\'s on your mind?',
                 border: OutlineInputBorder(),
               ),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             DropdownButtonFormField<String>(
               value: _selectedEmoji,
-              items: ['😊', '😢', '😡', '😍', '😴', '😞', '😤', '😨', '🤒', '😎','😄','🌧️', '☀️', '❤️', '💔', '🤔', '💐', '🎂'].map((String emoji) {
-                return DropdownMenuItem<String>(
-                  value: emoji,
-                  child: Text(emoji, style: TextStyle(fontSize: 24)),
-                );
-              }).toList(),
-              onChanged: (value) {
-                setState(() {
-                  _selectedEmoji = value!;
-                });
-              },
-              decoration: InputDecoration(
+              items: ['😊', '😢', '😡', '😍', '😴', '😞', '😤', '😨', '🤒', '😎', '😄', '🌧️', '☀️', '❤️', '💔', '🤔', '💐', '🎂']
+                  .map((emoji) => DropdownMenuItem<String>(
+                        value: emoji,
+                        child: Text(emoji, style: const TextStyle(fontSize: 24)),
+                      ))
+                  .toList(),
+              onChanged: (value) => setState(() => _selectedEmoji = value!),
+              decoration: const InputDecoration(
                 labelText: 'How do you feel?',
                 border: OutlineInputBorder(),
               ),
             ),
-
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             if (_selectedImage != null)
               Padding(
                 padding: const EdgeInsets.only(bottom: 12),
                 child: Image.file(_selectedImage!, height: 150),
               ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                ElevatedButton.icon(
-                  onPressed: _pickImage,
-                  icon: Icon(Icons.photo),
-                  label: Text('Add Photo'),
-                ),
-                SizedBox(width: 16),
-                DropdownButton<String>(
-                  value: _selectedFont,
-                  items: availableFonts.map((font) {
-                    return DropdownMenuItem(
-                      value: font,
-                      child: Text(font),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      _selectedFont = value!;
-                    });
-                  },
-                ),
+            Center(
+              child: ElevatedButton.icon(
+                onPressed: _pickImage,
+                icon: const Icon(Icons.photo),
+                label: const Text('Add Photo'),
+              ),
+            ),
           ],
         ),
-          ],
-      ),
       ),
     );
   }

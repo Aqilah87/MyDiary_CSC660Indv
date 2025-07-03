@@ -23,25 +23,16 @@ void main() async {
   final prefs = await SharedPreferences.getInstance();
   final isDark = prefs.getBool('is_dark_mode') ?? false;
   final isPinEnabled = prefs.getBool('is_pin_enabled') ?? false;
-  final seenOnboarding = prefs.getBool('seenOnboard') ?? false;
 
   themeNotifier.value = isDark ? ThemeMode.dark : ThemeMode.light;
 
-  runApp(MyApp(
-    isPinEnabled: isPinEnabled,
-    showOnboarding: !seenOnboarding,
-  ));
+  runApp(MyApp(isPinEnabled: isPinEnabled));
 }
 
 class MyApp extends StatelessWidget {
   final bool isPinEnabled;
-  final bool showOnboarding;
 
-  const MyApp({
-    Key? key,
-    required this.isPinEnabled,
-    required this.showOnboarding,
-  }) : super(key: key);
+  const MyApp({Key? key, required this.isPinEnabled}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -50,16 +41,56 @@ class MyApp extends StatelessWidget {
       builder: (_, mode, __) => MaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'Aqilah\'s Diary',
+        themeMode: mode,
+
+        // ☀️ LIGHT THEME
         theme: ThemeData(
-          primarySwatch: Colors.purple,
           brightness: Brightness.light,
+          scaffoldBackgroundColor: Color(0xFFF4FDFF),
+          primarySwatch: Colors.blue,
+          appBarTheme: AppBarTheme(
+            backgroundColor: Color(0xFF009DC4),
+            foregroundColor: Colors.black,
+            titleTextStyle: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Colors.black,
+            ),
+          ),
+          cardColor: Color(0xFFE0F7F4),
+          elevatedButtonTheme: ElevatedButtonThemeData(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Color(0xFF32CD32),
+              foregroundColor: Colors.white,
+            ),
+          ),
         ),
+
+        // 🌙 DARK THEME
         darkTheme: ThemeData(
           brightness: Brightness.dark,
-          primarySwatch: Colors.purple,
+          scaffoldBackgroundColor: Color(0xFF121212),
+          primarySwatch: Colors.blueGrey,
+          appBarTheme: AppBarTheme(
+            backgroundColor: Color(0xFF1E1E1E),
+            foregroundColor: Colors.white,
+            titleTextStyle: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+          cardColor: Colors.grey[900],
+          elevatedButtonTheme: ElevatedButtonThemeData(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.tealAccent[700],
+              foregroundColor: Colors.black,
+            ),
+          ),
         ),
-        themeMode: mode,
-      home: OnboardPage(),
+
+        // 👇 Always show onboarding screen
+        home: OnboardPage(),
       ),
     );
   }

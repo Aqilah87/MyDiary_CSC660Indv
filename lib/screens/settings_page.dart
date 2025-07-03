@@ -31,16 +31,6 @@ class _SettingsPageState extends State<SettingsPage> {
     _isPinLock = widget.isPinEnabled;
   }
 
-  void _toggleDarkMode(bool value) {
-    setState(() => _isDarkMode = value);
-    widget.onThemeChanged(value);
-  }
-
-  void _togglePinLock(bool value) {
-    setState(() => _isPinLock = value);
-    widget.onPinChanged(value);
-  }
-
   void _showAboutDialog() {
     showDialog(
       context: context,
@@ -48,14 +38,13 @@ class _SettingsPageState extends State<SettingsPage> {
         title: Text('About This App'),
         content: Text(
           '''Dear Diary is a personal and private digital diary that allows users to record their daily thoughts, feelings, and experiences.
-          Users can write journal entries, select emojis that reflect their mood, attach meaningful photos, and personalize their diary in a creative way. 
-          The app also includes features like a calendar view to track past entries, customizable fonts, and an easy-to-use interface for editing or deleting entries. 
-          Whether you're feeling happy, sad, or anything in between, Dear Diary is your safe space to express yourself.'''
-),
-
+Users can write journal entries, select emojis that reflect their mood, attach meaningful photos, and personalize their diary in a creative way. 
+The app also includes features like a calendar view to track past entries, customizable fonts, and an easy-to-use interface for editing or deleting entries. 
+Whether you're feeling happy, sad, or anything in between, Dear Diary is your safe space to express yourself.''',
+        ),
         actions: [
           TextButton(
-            child: Text('OK', style: TextStyle(color: Theme.of(context).primaryColor)),
+            child: Text('OK', style: TextStyle(color: Theme.of(context).colorScheme.primary)),
             onPressed: () => Navigator.pop(context),
           )
         ],
@@ -84,17 +73,28 @@ class _SettingsPageState extends State<SettingsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final textTheme = theme.textTheme;
+
     return Scaffold(
       appBar: AppBar(
-        title: Text('Settings'),
-      backgroundColor: const Color.fromARGB(255, 115, 204, 241),
+        title: Text(
+          'Settings',
+          style: theme.appBarTheme.titleTextStyle,
+        ),
+        backgroundColor: theme.appBarTheme.backgroundColor,
+        iconTheme: theme.appBarTheme.iconTheme,
       ),
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: ListView(
         children: [
           SwitchListTile(
-            title: Text('App Theme'),
-            subtitle: Text(_isDarkMode ? 'Dark Mode' : 'Light Mode'),
-            secondary: Icon(Icons.dark_mode),
+            title: Text('App Theme', style: textTheme.bodyMedium),
+            subtitle: Text(
+              _isDarkMode ? 'Dark Mode' : 'Light Mode',
+              style: textTheme.bodySmall,
+            ),
+            secondary: Icon(Icons.dark_mode, color: theme.iconTheme.color),
             value: _isDarkMode,
             onChanged: (val) async {
               final prefs = await SharedPreferences.getInstance();
@@ -103,30 +103,27 @@ class _SettingsPageState extends State<SettingsPage> {
               setState(() => _isDarkMode = val);
               themeNotifier.value = val ? ThemeMode.dark : ThemeMode.light;
               widget.onThemeChanged(val);
-              },
-              
-              ),
-              
-
+            },
+          ),
           Divider(),
+
           SwitchListTile(
-            title: Text('PIN Lock'),
-            subtitle: Text(_isPinLock ? 'Enabled' : 'Disabled'),
-            secondary: Icon(Icons.lock),
+            title: Text('PIN Lock', style: textTheme.bodyMedium),
+            subtitle: Text(_isPinLock ? 'Enabled' : 'Disabled', style: textTheme.bodySmall),
+            secondary: Icon(Icons.lock, color: theme.iconTheme.color),
             value: _isPinLock,
             onChanged: _handlePinToggle,
           ),
-
           Divider(),
+
           ListTile(
-            leading: Icon(Icons.info_outline),
-            title: Text('About App'),
-            trailing: Icon(Icons.chevron_right),
+            leading: Icon(Icons.info_outline, color: theme.iconTheme.color),
+            title: Text('About App', style: textTheme.bodyMedium),
+            trailing: Icon(Icons.chevron_right, color: theme.iconTheme.color),
             onTap: _showAboutDialog,
           ),
         ],
       ),
     );
-    
   }
 }

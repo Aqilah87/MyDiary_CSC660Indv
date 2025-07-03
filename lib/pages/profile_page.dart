@@ -139,7 +139,7 @@ class _ProfilePageState extends State<ProfilePage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('User Profile'),
-        backgroundColor: const Color.fromARGB(255, 115, 204, 241),
+        backgroundColor: Color(0xFF009DC4),
       ),
       body: SingleChildScrollView(
         child: Center(
@@ -176,7 +176,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 icon: Icon(Icons.edit),
                 label: Text('Edit Profile'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color.fromARGB(255, 25, 201, 255),
+                  backgroundColor:  Color.fromARGB(255, 173, 226, 238),
                 ),
               ),
               SizedBox(height: 20),

@@ -12,6 +12,8 @@ import '../search/diary_search_delegate.dart';
 import 'dart:io';
 import '../data/quote_prompt.dart';
 import '/pages/onboard_page.dart';
+import '/pages/diary_detail_page.dart';
+import '/screens/set_pin_page.dart';
 
       class HomePage extends StatefulWidget {
         @override
@@ -265,35 +267,35 @@ Widget build(BuildContext context) {
     // ⬇️ This is the actual content body
     body: Column(
       children: [
-        // 🌟 Daily Quote Card
-        Card(
-          color: Color.fromARGB(255, 224, 215, 246), // Lavender Mist
-          margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 16),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          elevation: 3,
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Row(
-                  children: [
-                    Icon(Icons.lightbulb_outline, color: Colors.orange),
-                    SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        '"$dailyQuote"',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontStyle: FontStyle.italic,
-                          fontSize: 16,
-                          color: Color(0xFF3C225C),
-                        fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+      // 🌟 Daily Quote Card
+      Card(
+        color: Color.fromARGB(255, 224, 215, 246), // Lavender Mist
+        margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 16),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        elevation: 3,
+        child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+          Row(
+            children: [
+            Icon(Icons.lightbulb_outline, color: Colors.orange),
+            SizedBox(width: 8),
+            Expanded(
+              child: Text(
+              '"$dailyQuote"',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontStyle: FontStyle.italic,
+                fontSize: 16,
+                color: Color(0xFF3C225C),
+                fontWeight: FontWeight.w500,
+              ),
+              ),
+            ),
+            ],
+          ),
                 SizedBox(height: 12),
                 Row(
                   children: [

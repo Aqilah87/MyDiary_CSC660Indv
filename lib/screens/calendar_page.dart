@@ -4,9 +4,11 @@ import '../models/diary_entry.dart';
 import '/pages/entry_form_page.dart';
 import 'package:collection/collection.dart';
 import 'dart:io';
+import '/pages/diary_detail_page.dart'; // ✅ Import detail page
 
 class CalendarPage extends StatefulWidget {
   final List<DiaryEntry> entries;
+
   CalendarPage({required this.entries});
 
   @override
@@ -20,10 +22,8 @@ class _CalendarPageState extends State<CalendarPage> {
   List<DateTime> _getDaysInMonth(DateTime month) {
     final firstDay = DateTime(month.year, month.month, 1);
     final lastDay = DateTime(month.year, month.month + 1, 0);
-    return List.generate(
-      lastDay.day,
-      (i) => DateTime(month.year, month.month, i + 1),
-    );
+    return List.generate(lastDay.day,
+        (i) => DateTime(month.year, month.month, i + 1));
   }
 
   void _goToPreviousMonth() {
@@ -43,34 +43,32 @@ class _CalendarPageState extends State<CalendarPage> {
       context,
       MaterialPageRoute(builder: (context) => EntryFormPage()),
     );
-
     if (newEntry != null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text("Diary added for ${DateFormat.yMMMd().format(selectedDate)}"),
+          content:
+              Text("Diary added for ${DateFormat.yMMMd().format(selectedDate)}"),
         ),
       );
-      setState(() {}); // refresh UI if needed
+      setState(() {});
     }
   }
 
   DiaryEntry? _getEntryForDate(DateTime date) {
-    return widget.entries.firstWhereOrNull(
-      (e) =>
-      e.date.year == date.year &&
-      e.date.month == date.month &&
-      e.date.day == date.day,
-    );
+    return widget.entries.firstWhereOrNull((e) =>
+        e.date.year == date.year &&
+        e.date.month == date.month &&
+        e.date.day == date.day);
   }
 
   List<DiaryEntry> _getEntriesForSelectedDate() {
     if (_selectedDate == null) return [];
-    return widget.entries.where(
-      (e) =>
-      e.date.year == _selectedDate!.year &&
-      e.date.month == _selectedDate!.month &&
-      e.date.day == _selectedDate!.day
-    ).toList();
+    return widget.entries
+        .where((e) =>
+            e.date.year == _selectedDate!.year &&
+            e.date.month == _selectedDate!.month &&
+            e.date.day == _selectedDate!.day)
+        .toList();
   }
 
   void _showImageDialog(String imagePath) {
@@ -119,7 +117,6 @@ class _CalendarPageState extends State<CalendarPage> {
         centerTitle: true,
       ),
       backgroundColor: Color.fromARGB(255, 173, 226, 238),
-
       body: Column(
         children: [
           // Month selector
@@ -128,16 +125,19 @@ class _CalendarPageState extends State<CalendarPage> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                IconButton(onPressed: _goToPreviousMonth, icon: Icon(Icons.chevron_left)),
+                IconButton(
+                    onPressed: _goToPreviousMonth,
+                    icon: Icon(Icons.chevron_left)),
                 Text(
                   monthName,
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
-                IconButton(onPressed: _goToNextMonth, icon: Icon(Icons.chevron_right)),
+                IconButton(
+                    onPressed: _goToNextMonth,
+                    icon: Icon(Icons.chevron_right)),
               ],
             ),
           ),
-          
 
           // Weekday headers
           Padding(
@@ -167,11 +167,12 @@ class _CalendarPageState extends State<CalendarPage> {
                 crossAxisCount: 7,
                 childAspectRatio: 1,
               ),
-
-              itemCount: daysInMonth.length + daysInMonth.first.weekday - 1,
+              itemCount: daysInMonth.length +
+                  daysInMonth.first.weekday -
+                  1, // for alignment
               itemBuilder: (context, index) {
                 if (index < daysInMonth.first.weekday - 1) {
-                  return SizedBox(); // empty space for alignment
+                  return SizedBox(); // alignment spacer
                 }
 
                 final actualIndex = index - (daysInMonth.first.weekday - 1);
@@ -181,11 +182,11 @@ class _CalendarPageState extends State<CalendarPage> {
                 return GestureDetector(
                   onTap: () {
                     setState(() {
-                      _selectedDate = day; // ✅ Set selected date
+                      _selectedDate = day;
                     });
                     if (entry == null) {
                       _createEntry(day);
-                    } 
+                    }
                   },
                   child: Center(
                     child: Column(
@@ -196,17 +197,17 @@ class _CalendarPageState extends State<CalendarPage> {
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 14,
-                            color: entry != null 
-                            ? Colors.black87 
-                            : Colors.black54,
+                            color: entry != null
+                                ? Colors.black87
+                                : Colors.black54,
                           ),
                         ),
                         SizedBox(height: 4),
                         entry == null
                             ? Icon(Icons.add_circle_outline,
-                            size: 20, color: Color.fromARGB(255, 7, 70, 86),)
-                            : Text(entry.emoji,
-                            style: TextStyle(fontSize: 20)),
+                                size: 20,
+                                color: Color.fromARGB(255, 7, 70, 86))
+                            : Text(entry.emoji, style: TextStyle(fontSize: 20)),
                       ],
                     ),
                   ),
@@ -226,16 +227,25 @@ class _CalendarPageState extends State<CalendarPage> {
                   Divider(),
                   Text(
                     'Entries for ${DateFormat.yMMMMd().format(_selectedDate!)}',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    style:
+                        TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                   SizedBox(height: 6),
                   ...selectedEntries.map(
                     (entry) => Card(
                       child: ListTile(
-                        leading: Text(entry.emoji,
-                            style: TextStyle(fontSize: 22)),
+                        leading:
+                            Text(entry.emoji, style: TextStyle(fontSize: 22)),
                         title: Text(entry.title),
                         subtitle: Text(entry.text),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => DiaryDetailPage(entry: entry),
+                            ),
+                          );
+                        },
                       ),
                     ),
                   ),

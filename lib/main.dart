@@ -8,31 +8,24 @@ import 'pages/onboard_page.dart';
 import 'models/diary_entry.dart';
 import 'theme_controller.dart';
 
-// 🌓 Global theme notifier
 final ValueNotifier<ThemeMode> themeNotifier = ValueNotifier(ThemeMode.light);
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize Hive
   await Hive.initFlutter();
   Hive.registerAdapter(DiaryEntryAdapter());
   await Hive.openBox<DiaryEntry>('diary');
 
-  // Load preferences
   final prefs = await SharedPreferences.getInstance();
   final isDark = prefs.getBool('is_dark_mode') ?? false;
-  final isPinEnabled = prefs.getBool('is_pin_enabled') ?? false;
-
   themeNotifier.value = isDark ? ThemeMode.dark : ThemeMode.light;
 
-  runApp(MyApp(isPinEnabled: isPinEnabled));
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  final bool isPinEnabled;
-
-  const MyApp({Key? key, required this.isPinEnabled}) : super(key: key);
+  const MyApp({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +36,6 @@ class MyApp extends StatelessWidget {
         title: 'Aqilah\'s Diary',
         themeMode: mode,
 
-        // ☀️ LIGHT THEME
         theme: ThemeData(
           brightness: Brightness.light,
           scaffoldBackgroundColor: Color(0xFFF4FDFF),
@@ -66,7 +58,6 @@ class MyApp extends StatelessWidget {
           ),
         ),
 
-        // 🌙 DARK THEME
         darkTheme: ThemeData(
           brightness: Brightness.dark,
           scaffoldBackgroundColor: Color(0xFF121212),
@@ -89,8 +80,7 @@ class MyApp extends StatelessWidget {
           ),
         ),
 
-        // 👇 Always show onboarding screen
-        home: OnboardPage(),
+        home: OnboardPage(), // ✅ Always show onboarding first
       ),
     );
   }

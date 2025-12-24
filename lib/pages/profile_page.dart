@@ -174,7 +174,9 @@ class _ProfilePageState extends State<ProfilePage> {
               ElevatedButton.icon(
                 onPressed: _showEditDialog,
                 icon: Icon(Icons.edit),
-                label: Text('Edit Profile'),
+                label: Text('Edit Profile',
+                style: TextStyle(color: Colors.black87),
+                ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor:  Color.fromARGB(255, 173, 226, 238),
                 ),
@@ -223,7 +225,7 @@ class _ProfilePageState extends State<ProfilePage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(value, style: TextStyle(fontWeight: FontWeight.bold)),
-            Text(label, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+            Text(label, style: TextStyle(fontSize: 12, color: Colors.black87)),
           ],
         ),
       ),

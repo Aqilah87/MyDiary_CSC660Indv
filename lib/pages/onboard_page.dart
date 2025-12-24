@@ -1,23 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'home_page.dart';
-import '../lock_screen.dart'; // Update with correct path if needed
+import '../lock_screen.dart'; // Adjust path if needed
 
 class OnboardPage extends StatelessWidget {
   const OnboardPage({Key? key}) : super(key: key);
 
   Future<void> _completeOnboarding(BuildContext context) async {
     final prefs = await SharedPreferences.getInstance();
-    // Optional: mark onboarding as seen (not needed if onboarding shows every time)
+
+    // ✅ Mark onboarding as seen (optional for future logic)
     await prefs.setBool('seenOnboard', true);
 
+    // ✅ Check if the user has enabled PIN lock
     final isPinEnabled = prefs.getBool('is_pin_enabled') ?? false;
 
-    // Redirect based on pin status
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-        builder: (_) => isPinEnabled ? LockScreen() : HomePage(),
+        builder: (_) => HomePage(), // 
       ),
     );
   }
@@ -69,7 +70,6 @@ class OnboardPage extends StatelessWidget {
                 ],
               ),
             ),
-
             Positioned(
               bottom: 30,
               right: 30,

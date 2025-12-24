@@ -54,20 +54,70 @@ Whether you're feeling happy, sad, or anything in between, Dear Diary is your sa
 
   Future<void> _handlePinToggle(bool val) async {
     final prefs = await SharedPreferences.getInstance();
-    setState(() => _isPinLock = val);
-    widget.onPinChanged(val);
-    await prefs.setBool('is_pin_enabled', val);
 
     if (val) {
+      // User wants to enable PIN
       final newPin = await Navigator.push(
         context,
         MaterialPageRoute(builder: (_) => SetPinPage()),
       );
+      
+      // Only enable if user successfully set a PIN
       if (newPin != null && newPin.length >= 4) {
-        await prefs.setString('user_pin_code', newPin);
+        await prefs.setString('user_pin', newPin); // CHANGED: user_pin_code -> user_pin
+        await prefs.setBool('pin_enabled', true); // CHANGED: is_pin_enabled -> pin_enabled
+        
+        setState(() => _isPinLock = true);
+        widget.onPinChanged(true);
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('PIN enabled successfully!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } else {
+        // User cancelled or didn't set proper PIN
+        setState(() => _isPinLock = false);
+        widget.onPinChanged(false);
       }
     } else {
-      await prefs.remove('user_pin_code');
+      // User wants to disable PIN - ask for confirmation
+      final confirm = await showDialog<bool>(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: Text('Disable PIN Lock?'),
+          content: Text('Are you sure you want to disable PIN protection?'),
+          actions: [
+            TextButton(
+              child: Text('Cancel'),
+              onPressed: () => Navigator.pop(context, false),
+            ),
+            TextButton(
+              child: Text('Disable', style: TextStyle(color: Colors.red)),
+              onPressed: () => Navigator.pop(context, true),
+            ),
+          ],
+        ),
+      );
+      
+      if (confirm == true) {
+        await prefs.setBool('pin_enabled', false); // CHANGED: is_pin_enabled -> pin_enabled
+        await prefs.remove('user_pin'); // CHANGED: user_pin_code -> user_pin
+        
+        setState(() => _isPinLock = false);
+        widget.onPinChanged(false);
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('PIN disabled'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      } else {
+        // User cancelled, keep toggle on
+        setState(() => _isPinLock = true);
+      }
     }
   }
 

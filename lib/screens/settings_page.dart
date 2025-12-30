@@ -1,13 +1,15 @@
+// lib/screens/settings_page.dart
+// BIOMETRIC TOGGLE (no PIN)
+
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../main.dart';
-import 'set_pin_page.dart';
 
 class SettingsPage extends StatefulWidget {
   final bool isDarkMode;
-  final bool isPinEnabled;
+  final bool isPinEnabled; // Now means "biometric enabled"
   final Function(bool) onThemeChanged;
-  final Function(bool) onPinChanged;
+  final Function(bool) onPinChanged; // Now means "biometric changed"
 
   SettingsPage({
     required this.isDarkMode,
@@ -22,13 +24,25 @@ class SettingsPage extends StatefulWidget {
 
 class _SettingsPageState extends State<SettingsPage> {
   late bool _isDarkMode;
-  late bool _isPinLock;
+  late bool _isBiometricEnabled;
 
   @override
   void initState() {
     super.initState();
     _isDarkMode = widget.isDarkMode;
-    _isPinLock = widget.isPinEnabled;
+    _isBiometricEnabled = widget.isPinEnabled;
+    _loadBiometricStatus();
+  }
+
+  Future<void> _loadBiometricStatus() async {
+    final prefs = await SharedPreferences.getInstance();
+    final biometricEnabled = prefs.getBool('biometric_enabled') ?? false;
+    
+    print('🔍 Settings - Loading biometric status: $biometricEnabled');
+    
+    setState(() {
+      _isBiometricEnabled = biometricEnabled;
+    });
   }
 
   void _showAboutDialog() {
@@ -38,8 +52,15 @@ class _SettingsPageState extends State<SettingsPage> {
         title: Text('About This App'),
         content: Text(
           '''Dear Diary is a personal and private digital diary that allows users to record their daily thoughts, feelings, and experiences.
-Users can write journal entries, select emojis that reflect their mood, attach meaningful photos, and personalize their diary in a creative way. 
-The app also includes features like a calendar view to track past entries, customizable fonts, and an easy-to-use interface for editing or deleting entries. 
+
+Features:
+• Biometric security (fingerprint/face recognition)
+• Offline-first with auto-save
+• Photo attachments
+• Emoji mood tracking
+• Calendar view
+• Search functionality
+
 Whether you're feeling happy, sad, or anything in between, Dear Diary is your safe space to express yourself.''',
         ),
         actions: [
@@ -52,42 +73,42 @@ Whether you're feeling happy, sad, or anything in between, Dear Diary is your sa
     );
   }
 
-  Future<void> _handlePinToggle(bool val) async {
+  Future<void> _handleBiometricToggle(bool val) async {
     final prefs = await SharedPreferences.getInstance();
 
     if (val) {
-      // User wants to enable PIN
-      final newPin = await Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => SetPinPage()),
-      );
+      // Enable biometric
+      print('✅ Enabling biometric lock');
       
-      // Only enable if user successfully set a PIN
-      if (newPin != null && newPin.length >= 4) {
-        await prefs.setString('user_pin', newPin); // CHANGED: user_pin_code -> user_pin
-        await prefs.setBool('pin_enabled', true); // CHANGED: is_pin_enabled -> pin_enabled
-        
-        setState(() => _isPinLock = true);
-        widget.onPinChanged(true);
-        
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('PIN enabled successfully!'),
-            backgroundColor: Colors.green,
+      await prefs.setBool('biometric_enabled', true);
+      
+      // Verify save
+      final saved = prefs.getBool('biometric_enabled');
+      print('🔍 Verification - biometric_enabled after save: $saved');
+      
+      setState(() => _isBiometricEnabled = true);
+      widget.onPinChanged(true);
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              Icon(Icons.fingerprint, color: Colors.white),
+              SizedBox(width: 12),
+              Text('🔐 Biometric lock enabled!'),
+            ],
           ),
-        );
-      } else {
-        // User cancelled or didn't set proper PIN
-        setState(() => _isPinLock = false);
-        widget.onPinChanged(false);
-      }
+          backgroundColor: Colors.green,
+          duration: Duration(seconds: 3),
+        ),
+      );
     } else {
-      // User wants to disable PIN - ask for confirmation
+      // Disable biometric - ask for confirmation
       final confirm = await showDialog<bool>(
         context: context,
         builder: (_) => AlertDialog(
-          title: Text('Disable PIN Lock?'),
-          content: Text('Are you sure you want to disable PIN protection?'),
+          title: Text('Disable Biometric Lock?'),
+          content: Text('Are you sure you want to disable biometric protection?'),
           actions: [
             TextButton(
               child: Text('Cancel'),
@@ -102,21 +123,26 @@ Whether you're feeling happy, sad, or anything in between, Dear Diary is your sa
       );
       
       if (confirm == true) {
-        await prefs.setBool('pin_enabled', false); // CHANGED: is_pin_enabled -> pin_enabled
-        await prefs.remove('user_pin'); // CHANGED: user_pin_code -> user_pin
+        print('❌ Disabling biometric lock');
         
-        setState(() => _isPinLock = false);
+        await prefs.setBool('biometric_enabled', false);
+        
+        // Verify save
+        final saved = prefs.getBool('biometric_enabled');
+        print('🔍 Verification - biometric_enabled after disable: $saved');
+        
+        setState(() => _isBiometricEnabled = false);
         widget.onPinChanged(false);
         
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('PIN disabled'),
+            content: Text('Biometric lock disabled'),
             backgroundColor: Colors.orange,
           ),
         );
       } else {
         // User cancelled, keep toggle on
-        setState(() => _isPinLock = true);
+        setState(() => _isBiometricEnabled = true);
       }
     }
   }
@@ -138,6 +164,7 @@ Whether you're feeling happy, sad, or anything in between, Dear Diary is your sa
       backgroundColor: theme.scaffoldBackgroundColor,
       body: ListView(
         children: [
+          // Theme Toggle
           SwitchListTile(
             title: Text('App Theme', style: textTheme.bodyMedium),
             subtitle: Text(
@@ -157,15 +184,47 @@ Whether you're feeling happy, sad, or anything in between, Dear Diary is your sa
           ),
           Divider(),
 
+          // Biometric Lock Toggle
           SwitchListTile(
-            title: Text('PIN Lock', style: textTheme.bodyMedium),
-            subtitle: Text(_isPinLock ? 'Enabled' : 'Disabled', style: textTheme.bodySmall),
-            secondary: Icon(Icons.lock, color: theme.iconTheme.color),
-            value: _isPinLock,
-            onChanged: _handlePinToggle,
+            title: Text('Biometric Lock', style: textTheme.bodyMedium),
+            subtitle: Text(
+              _isBiometricEnabled ? 'Enabled' : 'Disabled',
+              style: textTheme.bodySmall,
+            ),
+            secondary: Icon(Icons.fingerprint, color: theme.iconTheme.color),
+            value: _isBiometricEnabled,
+            onChanged: _handleBiometricToggle,
           ),
+          
+          // Info about biometric
+          if (_isBiometricEnabled)
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Container(
+                padding: EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.blue.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.blue.withOpacity(0.3)),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.info_outline, color: Colors.blue, size: 20),
+                    SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        'Your diary is protected with fingerprint or face recognition',
+                        style: TextStyle(fontSize: 12, color: Colors.blue[800]),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          
           Divider(),
 
+          // About App
           ListTile(
             leading: Icon(Icons.info_outline, color: theme.iconTheme.color),
             title: Text('About App', style: textTheme.bodyMedium),

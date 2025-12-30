@@ -1,19 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'entry_form_page.dart';
+import 'entry_form_page_offline.dart';
 import '../models/diary_entry.dart';
 import '../screens/calendar_page.dart';
 import '../screens/settings_page.dart';
 import '../theme_controller.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import '/pages/profile_page.dart';
+import 'profile_page.dart';
 import '../search/diary_search_delegate.dart';
 import 'dart:io';
-import '../data/quote_prompt.dart';
-import '/pages/onboard_page.dart';
-import '/pages/diary_detail_page.dart';
-import '/screens/set_pin_page.dart';
+import '../screens/offline_status_widget.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -22,7 +19,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   bool isDarkThemeEnabled = false;
-  bool isPinEnabled = false;
+  bool isPinEnabled = false; // NOTE: Now means "biometric enabled"
 
   List<DiaryEntry> entries = [];
   List<DiaryEntry> filteredEntries = [];
@@ -32,7 +29,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    _loadPinPreference();
+    _loadBiometricPreference();
     _loadDiaryEntries();
   }
 
@@ -72,24 +69,20 @@ class _HomePageState extends State<HomePage> {
     print('Loaded ${entries.length} entries');
   }
 
-  void _loadPinPreference() async {
+  void _loadBiometricPreference() async {
     final prefs = await SharedPreferences.getInstance();
-    final pinEnabled = prefs.getBool('pin_enabled') ?? false;
-    final userPin = prefs.getString('user_pin');
+    final biometricEnabled = prefs.getBool('biometric_enabled') ?? false;
     
-    // ✅ DEBUG: Print values
-    print('🔍 HomePage - Loading PIN preference:');
-    print('   pin_enabled: $pinEnabled');
-    print('   user_pin: $userPin');
+    print('🔍 HomePage - Loading Biometric preference: $biometricEnabled');
     
     setState(() {
-      isPinEnabled = pinEnabled;
+      isPinEnabled = biometricEnabled;
     });
   }
 
-  void _savePinPreference(bool value) async {
+  void _saveBiometricPreference(bool value) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('pin_enabled', value);
+    await prefs.setBool('biometric_enabled', value);
   }
 
   void _handleThemeChanged(bool val) {
@@ -97,16 +90,9 @@ class _HomePageState extends State<HomePage> {
     themeNotifier.value = val ? ThemeMode.dark : ThemeMode.light;
   }
 
-  void _handlePinChanged(bool val) {
+  void _handleBiometricChanged(bool val) {
     setState(() => isPinEnabled = val);
-    _savePinPreference(val);
-  }
-
-  void _navigate(String label) {
-    Navigator.pop(context);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Navigated to: $label')),
-    );
+    _saveBiometricPreference(val);
   }
 
   void _searchDiary(String query) {
@@ -208,7 +194,7 @@ class _HomePageState extends State<HomePage> {
                 Navigator.pop(context);
                 final newEntry = await Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => EntryFormPage()),
+                  MaterialPageRoute(builder: (_) => EntryFormPageOffline()),
                 );
                 if (newEntry != null) {
                   _addNewEntry(newEntry);
@@ -241,9 +227,9 @@ class _HomePageState extends State<HomePage> {
             ListTile(
               leading: Icon(Icons.settings, color: Theme.of(context).iconTheme.color),
               title: Text('Settings', style: Theme.of(context).textTheme.bodyLarge),
-              onTap: () async { // ✅ CHANGED: Made async and await
+              onTap: () async {
                 Navigator.pop(context);
-                await Navigator.push( // ✅ CHANGED: Added await
+                await Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (_) => SettingsPage(
@@ -263,9 +249,8 @@ class _HomePageState extends State<HomePage> {
                   ),
                 );
                 
-                // ✅ NEW: Reload PIN preference after returning from Settings
-                _loadPinPreference();
-                print('🔄 Reloaded PIN preference after Settings');
+                _loadBiometricPreference();
+                print('🔄 Reloaded Biometric preference after Settings');
               },
             ),
           ],
@@ -274,7 +259,6 @@ class _HomePageState extends State<HomePage> {
 
       body: Column(
         children: [
-          // 🌟 Daily Quote Card
           Card(
             color: Color.fromARGB(255, 224, 215, 246),
             margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 16),
@@ -322,7 +306,8 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
 
-          // 📋 Diary Entry List or Empty State
+          SimpleOfflineStatusWidget(),
+
           Expanded(
             child: filteredEntries.isEmpty
                 ? Center(
@@ -387,7 +372,7 @@ class _HomePageState extends State<HomePage> {
                                         final updated = await Navigator.push(
                                           context,
                                           MaterialPageRoute(
-                                            builder: (_) => EntryFormPage(entry: entry),
+                                            builder: (_) => EntryFormPageOffline(entry: entry),
                                           ),
                                         );
                                         if (updated != null) {
@@ -463,7 +448,7 @@ class _HomePageState extends State<HomePage> {
         onPressed: () async {
           final newEntry = await Navigator.push(
             context,
-            MaterialPageRoute(builder: (_) => EntryFormPage()),
+            MaterialPageRoute(builder: (_) => EntryFormPageOffline()),
           );
           if (newEntry != null) {
             _addNewEntry(newEntry);
@@ -472,4 +457,4 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
-  }
+}

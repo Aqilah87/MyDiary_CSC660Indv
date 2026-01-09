@@ -11,6 +11,7 @@ import 'profile_page.dart';
 import '../search/diary_search_delegate.dart';
 import 'dart:io';
 import '../screens/offline_status_widget.dart';
+import 'notes_page.dart'; // ✅ NEW IMPORT
 
 class HomePage extends StatefulWidget {
   @override
@@ -19,7 +20,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   bool isDarkThemeEnabled = false;
-  bool isPinEnabled = false; // NOTE: Now means "biometric enabled"
+  bool isPinEnabled = false;
 
   List<DiaryEntry> entries = [];
   List<DiaryEntry> filteredEntries = [];
@@ -141,6 +142,19 @@ class _HomePageState extends State<HomePage> {
         iconTheme: Theme.of(context).appBarTheme.iconTheme ??
             IconThemeData(color: Theme.of(context).iconTheme.color),
         actions: [
+          // ✅ NEW: Notes button
+          IconButton(
+            icon: Icon(Icons.note_alt, color: Theme.of(context).iconTheme.color),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => NotesPage()),
+              );
+            },
+            tooltip: 'Notes',
+          ),
+          
+          // Existing search button
           IconButton(
             icon: Icon(Icons.search, color: Theme.of(context).iconTheme.color),
             onPressed: () async {
@@ -201,6 +215,20 @@ class _HomePageState extends State<HomePage> {
                 }
               },
             ),
+            
+            // ✅ NEW: Notes menu item in drawer
+            ListTile(
+              leading: Icon(Icons.note_alt, color: Theme.of(context).iconTheme.color),
+              title: Text('Notes', style: Theme.of(context).textTheme.bodyLarge),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => NotesPage()),
+                );
+              },
+            ),
+            
             ListTile(
               leading: Icon(Icons.calendar_month, color: Theme.of(context).iconTheme.color),
               title: Text('Diary Calendar', style: Theme.of(context).textTheme.bodyLarge),

@@ -22,14 +22,16 @@ class DiaryEntryAdapter extends TypeAdapter<DiaryEntry> {
       emoji: fields[2] as String,
       date: fields[3] as DateTime,
       imagePath: fields[4] as String?,
-      // fontName removed ✅
+      isDraft: fields[5] as bool,
+      isPublished: fields[6] as bool,
+      publishedDate: fields[7] as DateTime?,
     );
   }
 
   @override
   void write(BinaryWriter writer, DiaryEntry obj) {
     writer
-      ..writeByte(5) // ✅ Only 5 fields now
+      ..writeByte(8)
       ..writeByte(0)
       ..write(obj.title)
       ..writeByte(1)
@@ -39,7 +41,13 @@ class DiaryEntryAdapter extends TypeAdapter<DiaryEntry> {
       ..writeByte(3)
       ..write(obj.date)
       ..writeByte(4)
-      ..write(obj.imagePath);
+      ..write(obj.imagePath)
+      ..writeByte(5)
+      ..write(obj.isDraft)
+      ..writeByte(6)
+      ..write(obj.isPublished)
+      ..writeByte(7)
+      ..write(obj.publishedDate);
   }
 
   @override

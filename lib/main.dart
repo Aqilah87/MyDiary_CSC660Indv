@@ -6,6 +6,8 @@ import 'lock_screen.dart';
 import 'pages/home_page.dart';
 import 'pages/onboard_page.dart';
 import 'models/diary_entry.dart';
+import 'models/note.dart';
+import 'services/note_service.dart';
 
 final ValueNotifier<ThemeMode> themeNotifier = ValueNotifier(ThemeMode.light);
 
@@ -15,6 +17,8 @@ void main() async {
   await Hive.initFlutter();
   Hive.registerAdapter(DiaryEntryAdapter());
   await Hive.openBox<DiaryEntry>('diary');
+  Hive.registerAdapter(NoteAdapter());
+  await NoteService.init();
 
   final prefs = await SharedPreferences.getInstance();
   final isDark = prefs.getBool('is_dark_mode') ?? false;

@@ -2,7 +2,6 @@
 // BIOMETRIC ONLY - NO PIN
 
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:local_auth/local_auth.dart';
 import 'pages/home_page.dart';
 
@@ -17,7 +16,7 @@ class LockScreen extends StatefulWidget {
 class _LockScreenState extends State<LockScreen> {
   final LocalAuthentication _localAuth = LocalAuthentication();
   
-  bool _isAuthenticating = true;
+  bool _isAuthenticating = false;
   String _statusMessage = 'Checking biometric...';
   bool _biometricAvailable = false;
 
@@ -29,7 +28,6 @@ class _LockScreenState extends State<LockScreen> {
 
   Future<void> _checkBiometricAvailability() async {
     setState(() {
-      _isAuthenticating = true;
       _statusMessage = 'Checking device capabilities...';
     });
 
@@ -42,17 +40,32 @@ class _LockScreenState extends State<LockScreen> {
       print('   isDeviceSupported: $isDeviceSupported');
       
       if (canCheckBiometrics && isDeviceSupported) {
-        setState(() {
-          _biometricAvailable = true;
-          _statusMessage = 'Biometric available';
-        });
+        // Check available biometrics
+        final List<BiometricType> availableBiometrics = 
+            await _localAuth.getAvailableBiometrics();
         
-        await Future.delayed(Duration(milliseconds: 500));
-        _authenticate();
+        print('   availableBiometrics: $availableBiometrics');
+        
+        if (availableBiometrics.isNotEmpty) {
+          setState(() {
+            _biometricAvailable = true;
+            _statusMessage = 'Tap to authenticate';
+          });
+          
+          // Auto-trigger authentication after short delay
+          await Future.delayed(Duration(milliseconds: 800));
+          if (mounted) {
+            _authenticate();
+          }
+        } else {
+          setState(() {
+            _biometricAvailable = false;
+            _statusMessage = 'No biometric enrolled on device';
+          });
+        }
       } else {
         setState(() {
           _biometricAvailable = false;
-          _isAuthenticating = false;
           _statusMessage = 'Biometric not available on this device';
         });
       }
@@ -60,13 +73,14 @@ class _LockScreenState extends State<LockScreen> {
       print('❌ Error checking biometric: $e');
       setState(() {
         _biometricAvailable = false;
-        _isAuthenticating = false;
-        _statusMessage = 'Error checking biometric: $e';
+        _statusMessage = 'Error: $e';
       });
     }
   }
 
   Future<void> _authenticate() async {
+    if (_isAuthenticating) return;
+
     setState(() {
       _isAuthenticating = true;
       _statusMessage = 'Authenticating...';
@@ -77,7 +91,9 @@ class _LockScreenState extends State<LockScreen> {
         localizedReason: 'Please authenticate to access your diary',
         options: const AuthenticationOptions(
           stickyAuth: true,
-          biometricOnly: false,
+          biometricOnly: false, // Allows PIN/Pattern as fallback
+          useErrorDialogs: true,
+          sensitiveTransaction: true,
         ),
       );
 
@@ -95,19 +111,51 @@ class _LockScreenState extends State<LockScreen> {
       print('❌ Authentication error: $e');
       setState(() {
         _isAuthenticating = false;
-        _statusMessage = 'Authentication error: $e';
+        _statusMessage = 'Error: ${e.toString()}';
       });
+      
+      // Show error dialog
+      _showErrorDialog(e.toString());
     }
+  }
+
+  void _showErrorDialog(String error) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text('Authentication Error'),
+        content: Text(error),
+        actions: [
+          TextButton(
+            child: Text('Retry'),
+            onPressed: () {
+              Navigator.pop(context);
+              _authenticate();
+            },
+          ),
+          if (!_isAuthenticating)
+            TextButton(
+              child: Text('Skip'),
+              onPressed: () {
+                Navigator.pop(context);
+                _goToHome();
+              },
+            ),
+        ],
+      ),
+    );
   }
 
   void _goToHome() {
     print('✅ Authentication successful - navigating to HomePage');
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (_) => widget.childAfterUnlock ?? HomePage(),
-      ),
-    );
+    if (mounted) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => widget.childAfterUnlock ?? HomePage(),
+        ),
+      );
+    }
   }
 
   @override
@@ -131,43 +179,76 @@ class _LockScreenState extends State<LockScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
-                    Icons.fingerprint,
-                    size: 100,
-                    color: Colors.white,
+                  // Fingerprint Icon
+                  Container(
+                    padding: EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.fingerprint,
+                      size: 100,
+                      color: Colors.white,
+                    ),
                   ),
-                  SizedBox(height: 30),
+                  SizedBox(height: 40),
                   
+                  // Title
                   Text(
                     'Dear Diary',
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 32,
                       fontWeight: FontWeight.bold,
+                      letterSpacing: 1.2,
                     ),
                   ),
                   SizedBox(height: 10),
                   
+                  // Subtitle
                   Text(
-                    _statusMessage,
-                    textAlign: TextAlign.center,
+                    'Your private space',
                     style: TextStyle(
                       color: Colors.white70,
                       fontSize: 16,
                     ),
                   ),
+                  SizedBox(height: 40),
+                  
+                  // Status Message
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      _statusMessage,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
                   SizedBox(height: 50),
                   
+                  // Authentication Status/Button
                   if (_isAuthenticating)
                     Column(
                       children: [
                         CircularProgressIndicator(
                           valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          strokeWidth: 3,
                         ),
                         SizedBox(height: 20),
                         Text(
                           'Authenticating...',
-                          style: TextStyle(color: Colors.white70),
+                          style: TextStyle(
+                            color: Colors.white70,
+                            fontSize: 14,
+                          ),
                         ),
                       ],
                     )
@@ -179,7 +260,10 @@ class _LockScreenState extends State<LockScreen> {
                             icon: Icon(Icons.fingerprint, size: 28),
                             label: Text(
                               'Authenticate',
-                              style: TextStyle(fontSize: 18),
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                             onPressed: _authenticate,
                             style: ElevatedButton.styleFrom(
@@ -187,11 +271,12 @@ class _LockScreenState extends State<LockScreen> {
                               foregroundColor: Color(0xFF764ba2),
                               padding: EdgeInsets.symmetric(
                                 horizontal: 40,
-                                vertical: 15,
+                                vertical: 16,
                               ),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(30),
                               ),
+                              elevation: 5,
                             ),
                           )
                         else
@@ -200,7 +285,7 @@ class _LockScreenState extends State<LockScreen> {
                               Icon(
                                 Icons.error_outline,
                                 size: 60,
-                                color: Colors.orange,
+                                color: Colors.orange.shade300,
                               ),
                               SizedBox(height: 20),
                               Text(
@@ -211,13 +296,30 @@ class _LockScreenState extends State<LockScreen> {
                                   fontSize: 16,
                                 ),
                               ),
-                              SizedBox(height: 20),
-                              ElevatedButton(
-                                child: Text('Skip to App'),
+                              SizedBox(height: 10),
+                              Text(
+                                'Please enroll fingerprint in device settings',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 14,
+                                ),
+                              ),
+                              SizedBox(height: 30),
+                              ElevatedButton.icon(
+                                icon: Icon(Icons.arrow_forward),
+                                label: Text('Continue to App'),
                                 onPressed: _goToHome,
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.orange,
+                                  backgroundColor: Colors.orange.shade600,
                                   foregroundColor: Colors.white,
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: 30,
+                                    vertical: 14,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(25),
+                                  ),
                                 ),
                               ),
                             ],

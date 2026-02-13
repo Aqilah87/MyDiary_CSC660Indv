@@ -3,12 +3,15 @@ import '../models/note.dart';
 import '../services/note_service.dart';
 import 'note_form_page.dart';
 
+// NotesPage - Main screen for displaying and managing quick notes
+// Different from diary entries: notes are timeless reminders/ideas
 class NotesPage extends StatefulWidget {
   @override
   _NotesPageState createState() => _NotesPageState();
 }
 
 class _NotesPageState extends State<NotesPage> {
+  // Store all notes and filtered results
   List<Note> _notes = [];
   List<Note> _filteredNotes = [];
   final _searchController = TextEditingController();
@@ -20,6 +23,7 @@ class _NotesPageState extends State<NotesPage> {
     _loadNotes();
   }
 
+  // Load all notes from local database (Hive)
   void _loadNotes() {
     setState(() {
       _notes = NoteService.getNotesSortedByDate();
@@ -27,6 +31,7 @@ class _NotesPageState extends State<NotesPage> {
     });
   }
 
+  // Filter notes based on search query (searches title and content)
   void _searchNotes(String query) {
     setState(() {
       if (query.isEmpty) {
@@ -37,17 +42,20 @@ class _NotesPageState extends State<NotesPage> {
     });
   }
 
+  // Navigate to form page to create new note
   void _addNote() async {
     final result = await Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => NoteFormPage()),
     );
 
+    // Reload notes if new note was created
     if (result == true) {
       _loadNotes();
     }
   }
 
+  // Navigate to form page to edit existing note
   void _editNote(Note note) async {
     final result = await Navigator.push(
       context,
@@ -56,12 +64,15 @@ class _NotesPageState extends State<NotesPage> {
       ),
     );
 
+    // Reload notes if note was updated
     if (result == true) {
       _loadNotes();
     }
   }
 
+  // Delete note with confirmation dialog
   void _deleteNote(Note note) async {
+    // Show confirmation dialog before deleting
     final confirm = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
@@ -83,10 +94,12 @@ class _NotesPageState extends State<NotesPage> {
       ),
     );
 
+    // Delete note if user confirmed
     if (confirm == true) {
       await NoteService.deleteNote(note.id);
       _loadNotes();
       
+      // Show confirmation message
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Note deleted'),
@@ -96,6 +109,7 @@ class _NotesPageState extends State<NotesPage> {
     }
   }
 
+  // Format date for display (shows "Today", "Yesterday", or full date)
   String _formatDate(DateTime date) {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
@@ -111,6 +125,7 @@ class _NotesPageState extends State<NotesPage> {
     }
   }
 
+  // Return color based on note's color selection
   Color _getNoteColor(String? colorName) {
     switch (colorName) {
       case 'yellow':
@@ -137,6 +152,7 @@ class _NotesPageState extends State<NotesPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // AppBar with search functionality
       appBar: AppBar(
         title: _isSearching
             ? TextField(
@@ -153,6 +169,7 @@ class _NotesPageState extends State<NotesPage> {
             : Text('Notes'),
         backgroundColor: Colors.deepPurple,
         actions: [
+          // Toggle search mode
           IconButton(
             icon: Icon(_isSearching ? Icons.close : Icons.search),
             onPressed: () {
@@ -167,6 +184,7 @@ class _NotesPageState extends State<NotesPage> {
           ),
         ],
       ),
+      // Display empty state or list of notes
       body: _filteredNotes.isEmpty
           ? Center(
               child: Column(
@@ -207,18 +225,19 @@ class _NotesPageState extends State<NotesPage> {
                 return Card(
                   margin: EdgeInsets.only(bottom: 12),
                   elevation: 2,
-                  color: _getNoteColor(note.color),
+                  color: _getNoteColor(note.color), // Apply color coding
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: InkWell(
-                    onTap: () => _editNote(note),
+                    onTap: () => _editNote(note), // Tap to edit
                     borderRadius: BorderRadius.circular(12),
                     child: Padding(
                       padding: EdgeInsets.all(16),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          // Title and delete button
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
@@ -242,6 +261,7 @@ class _NotesPageState extends State<NotesPage> {
                             ],
                           ),
                           SizedBox(height: 8),
+                          // Note content preview
                           Text(
                             note.content,
                             style: TextStyle(
@@ -252,6 +272,7 @@ class _NotesPageState extends State<NotesPage> {
                             overflow: TextOverflow.ellipsis,
                           ),
                           SizedBox(height: 12),
+                          // Last modified date
                           Row(
                             children: [
                               Icon(
@@ -276,6 +297,7 @@ class _NotesPageState extends State<NotesPage> {
                 );
               },
             ),
+      // Floating button to add new note
       floatingActionButton: FloatingActionButton(
         onPressed: _addNote,
         backgroundColor: Colors.deepPurple,

@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import '../models/note.dart';
 import '../services/note_service.dart';
 
+// NoteFormPage - Form to create new note or edit existing note
+// Supports color coding and validates input before saving
 class NoteFormPage extends StatefulWidget {
-  final Note? note;
+  final Note? note; // If null = create new, if not null = edit existing
 
   NoteFormPage({this.note});
 
@@ -14,8 +16,9 @@ class NoteFormPage extends StatefulWidget {
 class _NoteFormPageState extends State<NoteFormPage> {
   final _titleController = TextEditingController();
   final _contentController = TextEditingController();
-  String? _selectedColor;
+  String? _selectedColor; // Stores user's color choice
 
+  // Available color options for notes
   final List<Map<String, dynamic>> _colors = [
     {'name': 'yellow', 'color': Colors.yellow.shade100, 'label': '🟨 Yellow'},
     {'name': 'green', 'color': Colors.green.shade100, 'label': '🟩 Green'},
@@ -27,6 +30,7 @@ class _NoteFormPageState extends State<NoteFormPage> {
   @override
   void initState() {
     super.initState();
+    // If editing existing note, load its data into form
     if (widget.note != null) {
       _titleController.text = widget.note!.title;
       _contentController.text = widget.note!.content;
@@ -34,10 +38,12 @@ class _NoteFormPageState extends State<NoteFormPage> {
     }
   }
 
+  // Save note to database (create new or update existing)
   Future<void> _saveNote() async {
     final title = _titleController.text.trim();
     final content = _contentController.text.trim();
 
+    // Validate title is not empty
     if (title.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -48,6 +54,7 @@ class _NoteFormPageState extends State<NoteFormPage> {
       return;
     }
 
+    // Validate content is not empty
     if (content.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -59,7 +66,8 @@ class _NoteFormPageState extends State<NoteFormPage> {
     }
 
     if (widget.note == null) {
-      // Create new note
+      // CREATE NEW NOTE
+      // Generate unique ID using timestamp
       final newNote = Note(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         title: title,
@@ -77,7 +85,8 @@ class _NoteFormPageState extends State<NoteFormPage> {
         ),
       );
     } else {
-      // Update existing note
+      // UPDATE EXISTING NOTE
+      // Keep original created date, update modified date
       final updatedNote = widget.note!.copyWith(
         title: title,
         content: content,
@@ -94,13 +103,16 @@ class _NoteFormPageState extends State<NoteFormPage> {
       );
     }
 
+    // Return to previous page with success flag
     Navigator.pop(context, true);
   }
 
+  // Prevent accidental data loss when back button pressed
   Future<bool> _onWillPop() async {
     final title = _titleController.text.trim();
     final content = _contentController.text.trim();
 
+    // If user has typed something, confirm before leaving
     if (title.isNotEmpty || content.isNotEmpty) {
       final leave = await showDialog<bool>(
         context: context,
@@ -124,6 +136,7 @@ class _NoteFormPageState extends State<NoteFormPage> {
       );
       return leave ?? false;
     }
+    // If nothing typed, allow leaving without confirmation
     return true;
   }
 
@@ -137,12 +150,13 @@ class _NoteFormPageState extends State<NoteFormPage> {
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
-      onWillPop: _onWillPop,
+      onWillPop: _onWillPop, // Handle back button press
       child: Scaffold(
         appBar: AppBar(
           title: Text(widget.note == null ? 'New Note' : 'Edit Note'),
           backgroundColor: Colors.deepPurple,
           actions: [
+            // Save button in app bar
             IconButton(
               icon: Icon(Icons.check),
               onPressed: _saveNote,
@@ -155,7 +169,7 @@ class _NoteFormPageState extends State<NoteFormPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Title field
+              // Title input field
               TextField(
                 controller: _titleController,
                 decoration: InputDecoration(
@@ -174,7 +188,7 @@ class _NoteFormPageState extends State<NoteFormPage> {
 
               SizedBox(height: 16),
 
-              // Color selector
+              // Color selection section
               Text(
                 'Note Color',
                 style: TextStyle(
@@ -183,6 +197,7 @@ class _NoteFormPageState extends State<NoteFormPage> {
                 ),
               ),
               SizedBox(height: 8),
+              // Display color options as chips
               Wrap(
                 spacing: 8,
                 children: _colors.map((colorData) {
@@ -203,7 +218,7 @@ class _NoteFormPageState extends State<NoteFormPage> {
 
               SizedBox(height: 16),
 
-              // Content field
+              // Content input field (multiline)
               TextField(
                 controller: _contentController,
                 maxLines: 15,
@@ -241,7 +256,7 @@ class _NoteFormPageState extends State<NoteFormPage> {
 
               SizedBox(height: 8),
 
-              // Info text
+              // Information text about local storage
               Center(
                 child: Text(
                   '💾 Notes are saved locally on your device',

@@ -91,7 +91,7 @@ class NetworkHelper {
       print('Error checking WiFi: $e');
       return false;
     }
-  }
+  } 
 
   /// Check if specifically connected to Mobile Data
   Future<bool> isMobileDataConnected() async {

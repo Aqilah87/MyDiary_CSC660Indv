@@ -77,4 +77,4 @@ class NoteService {
     final box = _getBox();
     await box.clear();
   }
-}
+} 
